@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.filepond--root, filepond--hopper {
+    /* display: none !important;  */
+    border: gainsboro;
+    border-style: dotted;
+    background-color: white !important;
+    border-radius: 10px;
+}
+
+.filepond--drop-label{
+    background-color: white !important;
+}
+
+.filepond--drop-label{
+    font-size: 14px !important;
+}
