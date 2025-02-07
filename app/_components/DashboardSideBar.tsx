@@ -7,7 +7,7 @@ const DashboardSideBar: React.FC = () => {
   const iconStyle = 'text-white/80 size-[1.28rem]';
   return (
     <aside className="flex flex-col w-64 h-screen px-5 py-8 overflow-y-auto bg-appBg pl-8 font-sans uppercase">
-      <Link href="/map" className="mt-8">
+      <Link href="/map" className="mt-12">
         <Image
           src="/images/conjugate.svg"
           width={120}
