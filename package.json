@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync": "npx prisma db push"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.722.0",
@@ -43,7 +44,7 @@
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
-    "prisma": "^6.0.1",
+    "prisma": "^6.3.1",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }
