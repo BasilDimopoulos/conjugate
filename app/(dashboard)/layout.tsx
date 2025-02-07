@@ -6,12 +6,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="grid grid-cols-[0.5fr_2.5fr] h-screen">
-      <div className="col-1 w-64 bg-slate-100 hidden lg:block">
-        {/* <SideBar /> */}
+    <div className="flex h-screen w-full">
+      <div className="w-64 hidden lg:block">
         <SideBar />
       </div>
-      <div className="col-2 overflow-x-hidden w-full">{children}</div>
+      <div className='w-full'>
+        <div className="bg-appBg h-16 w-full"></div>
+        <div className="overflow-x-hidden w-full bg-appBg2 h-full">{children}</div>
+      </div>
     </div>
   );
 }

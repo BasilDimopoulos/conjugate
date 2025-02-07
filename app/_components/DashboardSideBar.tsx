@@ -1,15 +1,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import { BiLibrary, BiMapAlt } from 'react-icons/bi';
+import { BiLibrary, BiMapAlt, BiPen } from 'react-icons/bi';
 
 const DashboardSideBar: React.FC = () => {
-  const iconStyle = 'text-slate-600 size-[1.28rem]';
+  const iconStyle = 'text-white/80 size-[1.28rem]';
   return (
-    <aside className="flex flex-col w-64 h-screen px-5 py-8 overflow-y-auto bg-white border-r border-gray-300 rtl:border-r-0 rtl:border-l pl-8 font-sans uppercase">
-      <Link href="/map">
+    <aside className="flex flex-col w-64 h-screen px-5 py-8 overflow-y-auto bg-appBg pl-8 font-sans uppercase">
+      <Link href="/map" className="mt-8">
         <Image
-          src="/images/revlit_logo.png"
+          src="/images/conjugate.svg"
           width={120}
           height={120}
           alt="revlit logo"
@@ -20,19 +20,24 @@ const DashboardSideBar: React.FC = () => {
         <nav className="-mx-3 space-y-3">
           {[
             {
-              label: 'Map',
+              label: 'Stories',
               icon: <BiMapAlt className={iconStyle} />,
-              path: '/map',
+              path: '/stories',
             },
             {
-              label: 'Library',
+              label: 'Learn',
               icon: <BiLibrary className={iconStyle} />,
-              path: '/library',
+              path: '/learn',
+            },
+            {
+              label: 'Review',
+              icon: <BiPen className={iconStyle} />,
+              path: '/review',
             },
           ].map((item, index) => (
             <Link
               key={index}
-              className="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg hover:bg-gray-100 hover:text-gray-700"
+              className="flex items-center px-3 py-2 text-white/80 transition-colors duration-300 transform rounded-lg hover:bg-gray-100 hover:text-gray-700"
               href={item.path}
             >
               {item.icon}

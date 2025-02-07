@@ -14,20 +14,20 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   clerkId   String?  @unique
-  mapId     String?
+  redisId   String?
   email     String   @unique
 }
 
 model Word {
-  id                String        @id @default(uuid())
-  display_text      String
-  language_id       String
-  image_url         String?
-  pronunciation_url String?
-  mnemonic          String?
-  fun_fact          String?
-  translationsFrom  Translation[] @relation("WordToTranslation")
-  translationsTo    Translation[] @relation("TranslatedWordToTranslation")
+  id               String        @id @default(uuid())
+  displayText      String
+  languageId       String
+  imageUrl         String?
+  pronunciationUrl String?
+  mnemonic         String?
+  funFact          String?
+  translationsFrom Translation[] @relation("WordToTranslation")
+  translationsTo   Translation[] @relation("TranslatedWordToTranslation")
 }
 
 model Language {
@@ -37,17 +37,17 @@ model Language {
 }
 
 model Translation {
-  id                 String   @id @default(uuid())
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  word_id            String
-  translated_word_id String
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  wordId           String
+  translatedWordId String
 
-  word           Word @relation("WordToTranslation", fields: [word_id], references: [id])
-  translatedWord Word @relation("TranslatedWordToTranslation", fields: [translated_word_id], references: [id])
+  word           Word @relation("WordToTranslation", fields: [wordId], references: [id])
+  translatedWord Word @relation("TranslatedWordToTranslation", fields: [translatedWordId], references: [id])
 
-  @@index([word_id])
-  @@index([translated_word_id])
+  @@index([wordId])
+  @@index([translatedWordId])
 }
 
 // model Article {
