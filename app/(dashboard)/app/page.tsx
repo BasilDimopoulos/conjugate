@@ -1,5 +1,5 @@
 import FlashCard from '@/app/_components/flashcard';
-
+// import { redis } from '@/utils/redis';
 export default async function Home() {
   return (
     <div className="flex flex-col items-center text-center">

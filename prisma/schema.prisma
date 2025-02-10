@@ -19,15 +19,20 @@ model User {
 }
 
 model Word {
-  id               String        @id @default(uuid())
-  displayText      String
-  languageId       String
-  imageUrl         String?
-  pronunciationUrl String?
-  mnemonic         String?
-  funFact          String?
-  translationsFrom Translation[] @relation("WordToTranslation")
-  translationsTo   Translation[] @relation("TranslatedWordToTranslation")
+  id                    String        @id @default(uuid())
+  displayText           String
+  languageId            String
+  imageUrl              String?
+  pronunciationUrl      String?
+  mnemonic              String?
+  funFact               String?
+  phoneticTranscription String?
+  phoneticBreakdown     Json?
+  pinyin                String?
+  generationId          String?
+  defaultImageUrl       String?
+  translationsFrom      Translation[] @relation("WordToTranslation")
+  translationsTo        Translation[] @relation("TranslatedWordToTranslation")
 }
 
 model Language {
@@ -49,47 +54,3 @@ model Translation {
   @@index([wordId])
   @@index([translatedWordId])
 }
-
-// model Article {
-//   id                      String                    @id @default(uuid())
-//   createdAt               DateTime                  @default(now())
-//   updatedAt               DateTime                  @updatedAt
-//   markdownUrl             String?
-//   pdfUrl                  String?
-//   title                   String?
-//   mapId                   String?
-//   abstract                String?
-//   creating                Boolean?                  @default(true)
-//   references              Json[]
-//   authors                 String[]
-//   semanticScholarId       String?
-//   analysis                ArticleAnalysis?
-//   UserArticleRelationship UserArticleRelationship[]
-// }
-
-// model UserArticleRelationship {
-//   id        String   @id @default(uuid())
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   userId    String?
-//   articleId String?
-//   user      User?    @relation(fields: [userId], references: [id])
-//   article   Article? @relation(fields: [articleId], references: [id])
-
-//   @@index([userId])
-//   @@index([articleId])
-// }
-
-// model ArticleAnalysis {
-//   id            String   @id @default(uuid())
-//   createdAt     DateTime @default(now())
-//   updatedAt     DateTime @updatedAt
-//   articleId     String
-//   entry         Article  @relation(fields: [articleId], references: [id])
-//   author        String?
-//   yearPublished String?
-//   journal       String?
-//   abstract      String?
-
-//   @@unique([articleId])
-// }

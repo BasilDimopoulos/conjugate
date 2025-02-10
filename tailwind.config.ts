@@ -14,7 +14,7 @@ export default {
         velvet: '#AB345C',
         midnight: '#23174E',
         appBg: '#1C161C',
-        appBg2: "#211922"
+        appBg2: '#211922',
       },
       fontFamily: {
         sans: ['var(--font-euclid-circular)'],

@@ -48,3 +48,7 @@
 里 (lǐ) – inside, in
 话 (huà) – speech, words
 工作 (gōngzuò) – work, job
+
+Create a playable card from a collectible card game designed to help remember the word "我" in "chinese". The card should feature:
+
+A fantasy, serene and dark beautiful inspired card from. The scene shows a character in an exciting, energetic moment, shouting "Wo!" with a burst of magical energy or fireworks exploding around them. The character is surrounded by colorful swirls or sparkles that emphasize their excitement. The art style is dynamic and energetic, with an expressive, exaggerated action pose. The setting should reflect the energy of the moment—think of a celebratory scene, a battle won, or a festive event. The card is framed with intricate game UI elements, resembling a high-energy card from a fantasy card game like Magic: The Gathering or Hearthstone.

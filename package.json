@@ -14,7 +14,9 @@
     "@aws-sdk/client-s3": "^3.722.0",
     "@clerk/nextjs": "^6.5.1",
     "@headlessui/react": "^2.2.0",
+    "@leonardo-ai/sdk": "^4.19.9",
     "@prisma/client": "^6.0.1",
+    "elevenlabs": "^1.50.5",
     "filepond-plugin-file-encode": "^2.1.14",
     "filepond-plugin-file-validate-size": "^2.2.8",
     "filepond-plugin-file-validate-type": "^1.2.9",
@@ -32,7 +34,9 @@
     "react-force-graph-2d": "^1.25.8",
     "react-icons": "^5.4.0",
     "react-spinners": "^0.15.0",
-    "reactjs-popup": "^2.0.6"
+    "reactjs-popup": "^2.0.6",
+    "redis": "^4.7.0",
+    "uuid": "^11.0.5"
   },
   "devDependencies": {
     "@types/formidable": "^3.4.5",

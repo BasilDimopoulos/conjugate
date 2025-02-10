@@ -1,0 +1,57 @@
+'use client';
+import {
+    createAudioFileFromText,
+  generateFromLeonardo,
+  generateVoiceFromElevenLabs,
+  getWordDataViaGPT,
+  retrieveImageFromLeonardo,
+} from '@/app/_services/ai';
+import { useState } from 'react';
+
+const onGenerate = async (word: string, language: string) => {
+  console.log('Getting Data...');
+  //   const wordInfo = await getFlashCardData(word, language);
+  //   const imageGenerationId = await generateImage(wordInfo.imagePrompt);
+  //   const imageUrl = await retrieveImageFromLeonardo(imageGenerationId);
+  //   console.log(imageUrl);
+  createAudioFileFromText(word);
+};
+
+const getFlashCardData = async (word: string, language: string) => {
+  console.log('Getting Data From OpenAI');
+  const wordInformation = await getWordDataViaGPT(word, language);
+  console.log(wordInformation);
+  return wordInformation;
+};
+
+const generateImage = async (imagePrompt: string) => {
+  console.log('Getting Image From Leonardo');
+  const images = await generateFromLeonardo(imagePrompt);
+  console.log('images: ', images);
+  //   return images.
+};
+
+const generateAudio = () => {
+  console.log('Getting Audio From ElevenLabs');
+};
+
+export default function Home() {
+  const [inputWord, setInputWord] = useState('');
+  return (
+    <div className="flex flex-col items-center text-center text-white/80">
+      <label className="mt-20">Word</label>
+      <input
+        onChange={(e) => setInputWord(e.target.value)}
+        value={inputWord}
+        className="mt-1 text-black px-1"
+      ></input>
+
+      <button
+        onClick={() => onGenerate(inputWord, 'chinese')}
+        className="mt-20 bg-velvet px-3 py-1"
+      >
+        Generate Data
+      </button>
+    </div>
+  );
+}
