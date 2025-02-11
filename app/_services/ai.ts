@@ -2,9 +2,10 @@
 
 import OpenAI from 'openai';
 import { Leonardo } from '@leonardo-ai/sdk';
-import { ElevenLabsClient, play } from 'elevenlabs';
-import { createWriteStream } from 'fs';
+import { ElevenLabsClient } from 'elevenlabs';
 import { v4 as uuid } from 'uuid';
+import uploadFileToS3 from './s3';
+import { getStreamAsBuffer } from 'get-stream';
 
 export const getWordDataViaGPT = async (word: string, language: string) => {
   let openai;
@@ -136,7 +137,7 @@ export const generateVoiceFromElevenLabs = async (
   text: string,
   language: string
 ) => {
-  console.log('Generating Voice');
+  console.log('Generating Voice for language: ', language);
   const client = new ElevenLabsClient({
     apiKey: process.env.ELEVENLABS_API_KEY,
   });
@@ -151,26 +152,43 @@ export const generateVoiceFromElevenLabs = async (
 export const createAudioFileFromText = async (
   text: string
 ): Promise<string> => {
-  console.log('Generating Voice for: ', text);
+  console.log('Generating Voice for:', text);
+
   const client = new ElevenLabsClient({
     apiKey: process.env.ELEVENLABS_API_KEY,
   });
-  return new Promise<string>(async (resolve, reject) => {
-    try {
-      const audio = await client.generate({
-        voice: '4VZIsMPtgggwNg7OXbPY',
-        model_id: 'eleven_turbo_v2_5',
-        text,
-      });
-      const fileName = `${uuid()}.mp3`;
-      const fileStream = createWriteStream(fileName);
-      audio.pipe(fileStream);
-      fileStream.on('finish', () => resolve(fileName)); // Resolve with the fileName
-      fileStream.on('error', reject);
-    } catch (error) {
-      reject(error);
-    }
-  });
+  console.log('Generated Client');
+
+  try {
+    const audioStream = await client.generate({
+      voice: '4VZIsMPtgggwNg7OXbPY',
+      model_id: 'eleven_turbo_v2_5',
+      text,
+    });
+
+    const fileName = `${uuid()}.mp3`;
+    console.log('FileName: ', fileName);
+    const audioBuffer = await streamToBuffer(audioStream);
+    console.log('Received File Buffer: ', audioBuffer);
+    const url = await uploadFileToS3(audioBuffer, fileName);
+    console.log('Received Url: ', url);
+    return url;
+  } catch (error) {
+    console.error('Error generating audio file:', error);
+    throw new Error('Failed to generate and upload audio file.');
+  }
+};
+
+const streamToBuffer = async (
+  stream: NodeJS.ReadableStream
+): Promise<Buffer> => {
+  try {
+    console.log('Getting Stream...');
+    return await getStreamAsBuffer(stream);
+  } catch (error) {
+    console.error('Error converting stream to buffer:', error);
+    throw error;
+  }
 };
 
 // export const parseArticleTitleByMarkdown = (markdown: string) => {};

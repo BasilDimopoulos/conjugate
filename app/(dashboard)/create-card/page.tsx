@@ -1,20 +1,34 @@
 'use client';
 import {
-    createAudioFileFromText,
+  createAudioFileFromText,
   generateFromLeonardo,
-  generateVoiceFromElevenLabs,
   getWordDataViaGPT,
-  retrieveImageFromLeonardo,
+  // retrieveImageFromLeonardo,
 } from '@/app/_services/ai';
+import { saveWordInDatabase } from '@/app/_services/word';
 import { useState } from 'react';
 
 const onGenerate = async (word: string, language: string) => {
   console.log('Getting Data...');
-  //   const wordInfo = await getFlashCardData(word, language);
-  //   const imageGenerationId = await generateImage(wordInfo.imagePrompt);
-  //   const imageUrl = await retrieveImageFromLeonardo(imageGenerationId);
-  //   console.log(imageUrl);
-  createAudioFileFromText(word);
+  const wordInfo = await getFlashCardData(word, language);
+  const imageGenerationId = await generateImage(wordInfo.imagePrompt);
+  // const imageUrl = await retrieveImageFromLeonardo(imageGenerationId);
+  const audioUrl = await createAudioFileFromText(word);
+  console.log('Word Info: ', {
+    wordInfo,
+    imageGenerationId,
+    audioUrl,
+  });
+  saveWordInDatabase({
+    displayText: word,
+    languageId: '9cdde1b6-8f3c-4924-9d2a-167207e7385b',
+    pronunciationUrl: audioUrl,
+    mnemonic: wordInfo?.mnemonic,
+    funFact: wordInfo?.funFact,
+    phoneticTranscription: wordInfo?.phoneticTranscription,
+    pinyin: wordInfo?.pinyin,
+    generationId: imageGenerationId,
+  });
 };
 
 const getFlashCardData = async (word: string, language: string) => {
@@ -26,13 +40,9 @@ const getFlashCardData = async (word: string, language: string) => {
 
 const generateImage = async (imagePrompt: string) => {
   console.log('Getting Image From Leonardo');
-  const images = await generateFromLeonardo(imagePrompt);
-  console.log('images: ', images);
-  //   return images.
-};
-
-const generateAudio = () => {
-  console.log('Getting Audio From ElevenLabs');
+  const imageId = await generateFromLeonardo(imagePrompt);
+  console.log('images: ', imageId);
+  return imageId;
 };
 
 export default function Home() {

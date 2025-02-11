@@ -1,7 +1,6 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import formidable, { File } from 'formidable';
 import fs from 'fs';
-import path from 'path';
+import mime from 'mime-types';
 
 // AWS S3 configuration
 const s3Client = new S3Client({
@@ -17,37 +16,35 @@ export const uploadFileToS3 = async (
   filePathOrBuffer: string | Buffer,
   fileName: string
 ): Promise<string> => {
-  // Validate file type (PDF or Markdown)
-  const allowedExtensions = ['.pdf', '.md'];
-  const fileExtension = path.extname(fileName).toLowerCase();
-  const mimeType =
-    fileExtension === '.pdf'
-      ? 'application/pdf'
-      : fileExtension === '.md'
-      ? 'text/markdown'
-      : null;
+  console.log('Uploading to S3...');
 
-  if (!allowedExtensions.includes(fileExtension) || !mimeType) {
-    throw new Error('Only PDF and Markdown files are allowed.');
-  }
+  // Dynamically determine MIME type
+  const mimeType = mime.lookup(fileName) || 'application/octet-stream';
 
   const bucketName = process.env.S3_BUCKET;
+  if (!bucketName)
+    throw new Error('S3_BUCKET environment variable is missing.');
+
   const key = `uploads/${Date.now()}_${fileName}`; // Unique key for S3 object
 
   const fileStream = Buffer.isBuffer(filePathOrBuffer)
-    ? filePathOrBuffer // Use the Buffer directly
+    ? filePathOrBuffer // Use Buffer directly
     : fs.createReadStream(filePathOrBuffer); // Create a stream if given a file path
 
   const params = {
     Bucket: bucketName,
     Key: key,
     Body: fileStream,
-    ContentType: mimeType, // Set content type dynamically
+    ContentType: mimeType, // Use dynamically determined MIME type
   };
 
   try {
+    console.log('Sending file to S3...');
     await s3Client.send(new PutObjectCommand(params));
-    return `https://${bucketName}.s3.amazonaws.com/${key}`; // Return the public URL of the file
+    console.log('File successfully uploaded:', key);
+    const fileUrl = `https://${bucketName}.s3.amazonaws.com/${key}`;
+    console.log('Returning file URL:', fileUrl);
+    return fileUrl;
   } catch (error) {
     console.error('Error uploading file to S3:', error);
     throw new Error('Failed to upload file to S3.');

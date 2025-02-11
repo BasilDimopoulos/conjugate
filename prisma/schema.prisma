@@ -27,10 +27,8 @@ model Word {
   mnemonic              String?
   funFact               String?
   phoneticTranscription String?
-  phoneticBreakdown     Json?
   pinyin                String?
   generationId          String?
-  defaultImageUrl       String?
   translationsFrom      Translation[] @relation("WordToTranslation")
   translationsTo        Translation[] @relation("TranslatedWordToTranslation")
 }
