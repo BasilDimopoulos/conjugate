@@ -22,7 +22,7 @@ const createNewUser = async () => {
     });
   }
 
-  redirect('/map');
+  redirect('/app');
 };
 const NewUser = async () => {
   await createNewUser();
