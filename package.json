@@ -15,6 +15,7 @@
     "@clerk/nextjs": "^6.5.1",
     "@headlessui/react": "^2.2.0",
     "@leonardo-ai/sdk": "^4.19.9",
+    "@material-tailwind/react": "^2.1.10",
     "@prisma/client": "^6.0.1",
     "elevenlabs": "^1.50.5",
     "filepond-plugin-file-encode": "^2.1.14",

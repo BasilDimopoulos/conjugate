@@ -12,7 +12,7 @@ export default function DashboardLayout({
       </div>
       <div className='w-full'>
         <div className="bg-appBg h-16 w-full"></div>
-        <div className="overflow-x-hidden w-full bg-appBg2 h-full">{children}</div>
+        <div className="overflow-x-hidden w-full bg-purple-50 h-full font-sans">{children}</div>
       </div>
     </div>
   );

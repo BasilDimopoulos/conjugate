@@ -1,12 +1,15 @@
 /* eslint-disable */
-import { useLazyQuery } from "@apollo/client";
-import ListBox from "@gm-common/listbox";
-import { GET_AI_FACEBOOK_AD } from "@gm-graphql/queries/ai";
-import { styles } from "@gm-styles/styles";
+// import { useLazyQuery } from "@apollo/client";
+// import List from "@gm-common/listbox";
+import ListBox from "../ListBox";
+// import { GET_AI_FACEBOOK_AD } from "@gm-graphql/queries/ai";
+// import { styles } from "@gm-styles/styles";
+import { styles } from "../styles/styles";
 import { Spinner } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 
-import { CASSIE_AI_TEXT } from "../../../config/constants";
+// import { CASSIE_AI_TEXT } from "../../../config/constants";
+import { CASSIE_AI_TEXT } from "../ListBox";
 
 const previousCommands = {
   primaryMessage: "",

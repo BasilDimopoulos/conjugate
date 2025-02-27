@@ -1,4 +1,5 @@
-import { styles } from "@gm-styles/styles";
+"use client"
+import { styles } from "../styles/styles";
 import { Disclosure } from "@headlessui/react";
 import { useEffect, useState } from "react";
 

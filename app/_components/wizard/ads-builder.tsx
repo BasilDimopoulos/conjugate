@@ -1,15 +1,15 @@
-import { useQuery, useReactiveVar } from "@apollo/client";
-import MediaSelection from "@gm-components/media-selection";
-import { CURRENT_ACCOUNT } from "@gm-graphql/localStates/account";
-import { GET_MEDIA_ITEM } from "@gm-graphql/queries/drive";
-import { getSelectedFacebookAdAccount, getSelectedFacebookPage } from "@gm-lib/campaign";
+
+// import { useQuery, useReactiveVar } from "@apollo/client";
+// import MediaSelection from "@gm-components/media-selection";
+// import { CURRENT_ACCOUNT } from "@gm-graphql/localStates/account";
+// import { GET_MEDIA_ITEM } from "@gm-graphql/queries/drive";
+// import { getSelectedFacebookAdAccount, getSelectedFacebookPage } from "@gm-lib/campaign";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
-
-import { convertCTAString } from "../common";
 import AiAssistant from "./AiAssistant";
 import UTMCodeForm from "./utm_code";
+import { convertCTAString } from "../common";
 
 const AdsBuilderStep = (props) => {
   const ads = props.campaign?.ads || [];
