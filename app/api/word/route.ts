@@ -1,6 +1,20 @@
-// /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { NextRequest, NextResponse } from 'next/server';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { handleWordGenerationRequest } from '@/app/_services/word';
+import { NextRequest, NextResponse } from 'next/server';
 
+export async function GET(req: NextRequest) {
+  const requestData = req.nextUrl.searchParams;
+  const data = {
+    word: requestData.get('word'),
+    language: requestData.get('language'),
+  };
+  if (!data.language || !data.word) {
+    return NextResponse.json('Invalid Input', { status: 400 });
+  }
+  const wordData = await handleWordGenerationRequest(data.word, data.language);
+  console.log("wordData: ", wordData)
+  return NextResponse.json(wordData, { status: 200 });
+}
 
 // export async function GET(req: NextRequest) {
 //   console.log('Fetching...');

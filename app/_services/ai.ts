@@ -7,7 +7,7 @@ import { v4 as uuid } from 'uuid';
 import uploadFileToS3 from './s3';
 import { getStreamAsBuffer } from 'get-stream';
 
-export const getWordDataViaGPT = async (word: string, language: string) => {
+export const getWordDataViaGPT = async (word: string, language: string, context?: string) => {
   let openai;
   const OPENAI_API_KEY = process.env.OPENAI_KEY;
   console.log('Getting Data from OpenAi');
@@ -43,6 +43,7 @@ export const getWordDataViaGPT = async (word: string, language: string) => {
       The fun fact is anything throughout history or literature where the word was used in an interesting way.
       The phoneticTranscription is the pronunciation of the word in the phonetic alphabet.
       If the word is being translated from Chinese, Cantonese or any other language that uses pinyin, provide the pinyin. Otherwise use null.
+      If there is no context provided, return the most used or generic translation of the word in cases of multiple meanings. The context for this word is ${context}
       The imagePrompt should be a description of the mnemonic in a way that aids the user in remembering the mnemonic. e.g "Bold acrylic painting, vibrant colors and textured brushstrokes. Character shouts Wo amidst exploding fireworks, surrounded by colorful swirls. Dynamic, energetic style, expressive pose, celebratory scene."
       Object Schema:
       {
@@ -130,7 +131,7 @@ export const retrieveImageFromLeonardo = async (imageId: string) => {
   });
 
   const data = await leonardo.image.getGenerationById(imageId);
-  return data?.object?.generationsByPk?.generatedImages?.[0];
+  return data?.object?.generationsByPk?.generatedImages?.[0] as string;
 };
 
 export const generateVoiceFromElevenLabs = async (
@@ -152,12 +153,9 @@ export const generateVoiceFromElevenLabs = async (
 export const createAudioFileFromText = async (
   text: string
 ): Promise<string> => {
-  console.log('Generating Voice for:', text);
-
   const client = new ElevenLabsClient({
     apiKey: process.env.ELEVENLABS_API_KEY,
   });
-  console.log('Generated Client');
 
   try {
     const audioStream = await client.generate({
@@ -167,11 +165,8 @@ export const createAudioFileFromText = async (
     });
 
     const fileName = `${uuid()}.mp3`;
-    console.log('FileName: ', fileName);
     const audioBuffer = await streamToBuffer(audioStream);
-    console.log('Received File Buffer: ', audioBuffer);
     const url = await uploadFileToS3(audioBuffer, fileName);
-    console.log('Received Url: ', url);
     return url;
   } catch (error) {
     console.error('Error generating audio file:', error);

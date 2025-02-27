@@ -10,7 +10,7 @@ export default async function Home() {
         {' '}
         With these we can begin telling you stories
       </p>
-      <FlashCard />
+      {/* <FlashCard /> */}
     </div>
   );
 }

@@ -28,7 +28,7 @@ model Word {
   funFact               String?
   phoneticTranscription String?
   pinyin                String?
-  generationId          String?
+  generationId          String?       @unique
   translationsFrom      Translation[] @relation("WordToTranslation")
   translationsTo        Translation[] @relation("TranslatedWordToTranslation")
 }
