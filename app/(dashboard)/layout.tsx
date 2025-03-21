@@ -7,11 +7,10 @@ export default function DashboardLayout({
 }>) {
   return (
     <div className="flex h-screen w-full">
-      <div className="w-64 hidden lg:block">
+      <div className="">
         <SideBar />
       </div>
       <div className='w-full'>
-        <div className="bg-appBg h-16 w-full"></div>
         <div className="overflow-x-hidden w-full bg-appBg2 h-full p-20">{children}</div>
       </div>
     </div>
