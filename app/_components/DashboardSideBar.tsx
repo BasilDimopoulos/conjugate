@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import { BiLibrary, BiMapAlt, BiPen } from 'react-icons/bi';
+import { BiBookAdd, BiLibrary, BiMapAlt, BiPen, BiPlus } from 'react-icons/bi';
 
 const DashboardSideBar: React.FC = () => {
   const iconStyle = 'text-white/80 size-[1.28rem]';
@@ -48,32 +48,26 @@ const DashboardSideBar: React.FC = () => {
 
         <div>
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-800">Maps</h2>
-            <button className="p-0.5 hover:bg-gray-100 duration-200 transition-colors text-gray-500 border rounded-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-4 h-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 4.5v15m7.5-7.5h-15"
-                />
-              </svg>
+            <h2 className="text-base font-medium text-white font-sans">
+              Languages
+            </h2>
+            <button className="p-0.5 duration-200 transition-colors ">
+              <BiPlus className="text-white" />
             </button>
           </div>
 
           <nav className="mt-4 -mx-3 space-y-3">
             {[
-              { label: 'Korea', color: 'bg-pink-500' },
-              { label: 'Gender', color: 'bg-slate-500', active: true },
-              { label: 'Julia Gillard', color: 'bg-indigo-500' },
-              { label: 'Three Days Grace', color: 'bg-blue-500' },
-              { label: 'UI Components', color: 'bg-yellow-500' },
+              { label: 'China', flag: 'china', wordsPending: 50 },
+              {
+                label: 'Korean',
+                flag: 'korea',
+                wordsPending: 20,
+                active: true,
+              },
+              { label: 'Japanese', flag: 'japan', wordsPending: 4 },
+              { label: 'Greek', flag: 'greece', wordsPending: 0 },
+              { label: 'Russian', flag: 'russia', wordsPending: 10 },
             ].map((item, index) => (
               <button
                 key={index}
@@ -84,23 +78,15 @@ const DashboardSideBar: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center gap-x-2">
-                  <span className={`w-2 h-2 rounded-full ${item.color}`} />
+                  <Image
+                    src={`/images/${item.flag.toLowerCase()}_flag.svg`}
+                    width={12}
+                    height={12}
+                    alt="china flag"
+                  />
                   <span>{item.label}</span>
                 </div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-4 h-4 rtl:rotate-180"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                  />
-                </svg>
+                <p className='text-white font-light text-xs'>{item.wordsPending}</p>
               </button>
             ))}
           </nav>
