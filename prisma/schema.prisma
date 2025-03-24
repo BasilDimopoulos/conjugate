@@ -16,7 +16,32 @@ model User {
   clerkId   String?  @unique
   redisId   String?
   email     String   @unique
+
+  skills UsersSkills[]
 }
+
+model Skill {
+  id String @id @default(uuid())
+  type String
+  name String
+  available Boolean @default(false)
+  imageName String
+
+  users UsersSkills[]
+}
+
+model UsersSkills {
+  id               String   @id @default(uuid())
+  skillId          String @unique
+  userId           String  @unique
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([skillId])
+}
+
 
 model Word {
   id                    String        @id @default(uuid())

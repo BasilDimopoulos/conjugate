@@ -6,6 +6,11 @@ const euclidCircular = localFont({
   variable: '--font-euclid-circular',
   src: [
     {
+      path: './fonts/euclid_circular/Euclid_Circular_A_Light.ttf',
+      weight: '300',
+      style: 'normal',
+    },
+    {
       path: './fonts/euclid_circular/Euclid_Circular_A_Regular.ttf',
       weight: '400',
       style: 'normal',
