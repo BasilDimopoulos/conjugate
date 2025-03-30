@@ -2,16 +2,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 import {
-  BiArrowToBottom,
   BiChevronDown,
-  BiLibrary,
-  BiMapAlt,
-  BiPen,
-  BiPlus,
 } from 'react-icons/bi';
 
 const DashboardSideBar: React.FC = () => {
-  const iconStyle = 'text-white/80 size-[1.28rem]';
   return (
     <nav className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-screen-xl py-6 flex items-center justify-between z-50 bg-transparent">
       <div className="flex items-center gap-x-20">
