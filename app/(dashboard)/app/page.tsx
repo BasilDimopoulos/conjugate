@@ -6,6 +6,8 @@ async function fetchUserSkills(userId: string) {
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/user?userId=${userId}`
   );
 
+  console.log("Response: ", response)
+
   if (!response.ok) {
     throw new Error('Failed to fetch skills');
   }

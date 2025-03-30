@@ -16,7 +16,6 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const { userId, skills } = await req.json();
-    console.log("Skills: ", skills)
     
     if (!userId || !Array.isArray(skills) || skills.length === 0) {
       return NextResponse.json(
@@ -33,6 +32,13 @@ export async function POST(req: NextRequest) {
       })),
       skipDuplicates: true, // Avoid inserting duplicates
     });
+
+    await prisma.user.update({
+      where: {clerkId: userId},
+      data: {
+        mostRecentSkill: skills[0]
+      }
+    })
 
     return NextResponse.json(
       { message: 'Skills added successfully', createdSkills },

@@ -1,11 +1,16 @@
+import { prisma } from '@/utils/db';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import {
-  BiChevronDown,
-} from 'react-icons/bi';
+import { BiChevronDown } from 'react-icons/bi';
+import { getUser } from '../_services/user';
 
-const DashboardSideBar: React.FC = () => {
+const DashboardSideBar: React.FC = async() => {
+  const currentUser = await getUser();
+  const userData = await prisma.user.findFirst({
+    where: { clerkId: currentUser },
+  });
+  console.log("UserData: ", userData)
   return (
     <nav className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-screen-xl py-6 flex items-center justify-between z-50 bg-transparent">
       <div className="flex items-center gap-x-20">
@@ -56,7 +61,7 @@ const DashboardSideBar: React.FC = () => {
             width="20"
             height="20"
           />
-          <p>Greek</p>
+          <p>{userData?.mostRecentSkill}</p>
           <BiChevronDown />
         </button>
       </div>

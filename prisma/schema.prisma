@@ -16,6 +16,7 @@ model User {
   clerkId   String?  @unique
   redisId   String?
   email     String   @unique
+  mostRecentSkill String?
 
   skills UsersSkills[]
 }
