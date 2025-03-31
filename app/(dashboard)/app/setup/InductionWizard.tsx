@@ -1,8 +1,8 @@
 'use client';
 import { Skill } from '@prisma/client';
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { NextRouter } from 'next/router';
 import { useState } from 'react';
 import { BiArrowToLeft, BiChevronRight, BiSolidCircle } from 'react-icons/bi';
 
@@ -16,7 +16,7 @@ interface LanguageFeature {
   goBack: () => void;
   skillId: string;
   userId: string;
-  router: NextRouter;
+  router: AppRouterInstance;
 }
 
 interface LanguageFeatureRow {
@@ -75,7 +75,6 @@ export const InductionWizard = (props: InductionProps) => {
 };
 
 const LanguageFeature = (props: LanguageFeature) => {
-
   const greetings = {
     chinese: { language: 'chinese', hello: '你好' },
     japanese: { language: 'japanese', hello: 'こんにちは)' },
@@ -93,6 +92,7 @@ const LanguageFeature = (props: LanguageFeature) => {
   };
 
   async function addSkills(userId: string, skills: string[]) {
+    console.log('UserId: ', userId);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/skills`,
@@ -111,6 +111,7 @@ const LanguageFeature = (props: LanguageFeature) => {
       }
 
       props.router.push('/app');
+      window.location.reload();
 
       console.log('Skills added successfully:', data);
       return data;

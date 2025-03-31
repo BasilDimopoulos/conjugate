@@ -11,8 +11,32 @@ export const storeWordInRedis = async (
     const key = `${userId}/${language}`;
     console.log('key: ', key);
     console.log('userId: ', userId);
-    await redis.set(key, word, level);
+    // await redis.client.set(key, word, level);
   } catch (err: unknown) {
     console.log(err);
+  }
+};
+
+export const getDiff = async (
+  commonWordsKey: string,
+  usersWordsKey: string
+) => {
+  try {
+    // Fetch the words the user doesn't know
+    const unknownWords = await redis.client.sDiff([
+      commonWordsKey,
+      usersWordsKey,
+    ]);
+
+    console.log("Unkown Words: ", unknownWords)
+    // If we have at least 10 words, return 10 random words from the common words set
+    if (unknownWords.length >= 10) {
+      return unknownWords.slice(0, 10);
+    } else {
+      return unknownWords;
+    }
+  } catch (error) {
+    console.error('Error fetching unknown words:', error);
+    return [];
   }
 };

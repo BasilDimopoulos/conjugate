@@ -4,13 +4,19 @@ import Link from 'next/link';
 import React from 'react';
 import { BiChevronDown } from 'react-icons/bi';
 import { getUser } from '../_services/user';
+import { User, UsersSkills } from '@prisma/client';
 
-const DashboardSideBar: React.FC = async() => {
+interface SkillsButton {
+  user: Partial<User>;
+}
+
+const DashboardSideBar: React.FC = async () => {
   const currentUser = await getUser();
   const userData = await prisma.user.findFirst({
     where: { clerkId: currentUser },
   });
-  console.log("UserData: ", userData)
+  console.log("userData: ", userData)
+
   return (
     <nav className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-screen-xl py-6 flex items-center justify-between z-50 bg-transparent">
       <div className="flex items-center gap-x-20">
@@ -53,19 +59,37 @@ const DashboardSideBar: React.FC = async() => {
           </Link>
         ))}
       </nav>
-      <div className="flex items-center gap-x-8">
-        <button className="flex items-center gap-x-2 text-white font-sans font-medium2">
-          <Image
-            src="/images/greece_flag.svg"
-            alt="Greek flag"
-            width="20"
-            height="20"
-          />
-          <p>{userData?.mostRecentSkill}</p>
-          <BiChevronDown />
-        </button>
-      </div>
+      <SkillsButton user={userData || {}} />
     </nav>
+  );
+};
+
+const SkillsButton = async (props: SkillsButton) => {
+  const user = props.user;
+  const usersSkills = await prisma.usersSkills.findMany({
+    where: { userId: user.id },
+    include: {
+      skill: true
+    }
+  });
+  const mostRecentSkill = usersSkills.find(
+    (skill: UsersSkills) => skill.skillId === user?.mostRecentSkill
+  )?.skill;
+  console.log('usersSkills: ', usersSkills);
+  console.log('mostRecentSkill: ', mostRecentSkill?.skill);
+  return (
+    <div className="flex items-center gap-x-8">
+      <button className="flex items-center gap-x-2 text-white font-sans font-medium2">
+        <Image
+          src="/images/greece_flag.svg"
+          alt="Greek flag"
+          width="20"
+          height="20"
+        />
+        <p className='capitalize'>{mostRecentSkill?.name}</p>
+        <BiChevronDown />
+      </button>
+    </div>
   );
 };
 

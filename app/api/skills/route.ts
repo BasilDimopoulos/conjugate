@@ -16,17 +16,17 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const { userId, skills } = await req.json();
-    
+
     if (!userId || !Array.isArray(skills) || skills.length === 0) {
       return NextResponse.json(
         { error: 'Invalid request. userId and skills array are required.' },
         { status: 400 }
       );
     }
-    
+
     // Create skills for the user
     const createdSkills = await prisma.usersSkills.createMany({
-      data: skills.map(skillId => ({
+      data: skills.map((skillId) => ({
         userId,
         skillId,
       })),
@@ -34,11 +34,11 @@ export async function POST(req: NextRequest) {
     });
 
     await prisma.user.update({
-      where: {clerkId: userId},
+      where: {id: userId},
       data: {
-        mostRecentSkill: skills[0]
-      }
-    })
+        mostRecentSkill: skills[0],
+      },
+    });
 
     return NextResponse.json(
       { message: 'Skills added successfully', createdSkills },
