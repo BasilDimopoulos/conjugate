@@ -4,6 +4,11 @@ import { prisma } from '@/utils/db';
 import FlashCard from '@/app/_components/flashcard';
 import { getDiff } from '@/app/_services/redis';
 import { greekMFUKey } from '@/app/_constants/constants';
+import { generateWordsForUser } from '@/app/_services/word';
+
+interface HomeComponent {
+  user: string
+}
 
 async function fetchUserSkills(userId: string) {
   const response = await fetch(
@@ -42,12 +47,12 @@ export default async function Home() {
   if (!userData?.skills.length || userData?.skills.length < 1) {
     const availableSkills = await fetchAvailableSkills();
     return <InductionWizard skills={availableSkills} userId={userData.id} />;
-  } else return <HomeComponent />;
+  } else return <HomeComponent user={userData.id}/>;
 }
 
-const HomeComponent = () => {
- //given two lists. one on redis that has the most common words. And another that has words that the user already knows. How can I get a list of 10 words the user doesnt know
-  getDiff(greekMFUKey, `${userId}`)
+const HomeComponent = async(props: HomeComponent) => {
+  const unkownWords = await generateWordsForUser(10, props.user, 'greek')
+  console.log("The words to begin learning are: ", unkownWords)
   return (
     // if words are less than 10
     <div className="flex flex-col items-center text-center">

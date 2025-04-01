@@ -1,6 +1,33 @@
+"use server"
 import { prisma } from '@/utils/db';
 import { Word } from '@prisma/client';
-import { createAudioFileFromText, generateFromLeonardo, getWordDataViaGPT } from './ai';
+import {
+  createAudioFileFromText,
+  generateFromLeonardo,
+  getWordDataViaGPT,
+} from './ai';
+import { getDiff } from './redis';
+import { greekMFUKey } from '../_constants/constants';
+
+export const generateWordsForUser = async (
+  number: number,
+  userId: string,
+  language: string
+) => {
+  const userKey = `${userId}/${language}`;
+  //check if redis key exists
+  try {
+    //   const keyExists = redis.client.exists(userKey)
+    //   if(!keyExists) {
+    //     redis.client.hSet()
+    //   }
+    // }
+    const result = await getDiff(greekMFUKey, userKey);
+    return result;
+  } catch (error) {
+    console.error('Couldnt get diff: ', error);
+  }
+};
 
 export const saveWordInDatabase = async (data: Partial<Word>) => {
   try {
@@ -35,7 +62,7 @@ export const handleWordGenerationRequest = async (
 ) => {
   console.log('Handling Server Generation....');
   const wordInDatabase = await getWordsFromDatabase(word);
-  console.log("Word In Database: ", wordInDatabase)
+  console.log('Word In Database: ', wordInDatabase);
   if (wordInDatabase) {
     return wordInDatabase;
   }

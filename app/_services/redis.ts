@@ -22,6 +22,9 @@ export const getDiff = async (
   usersWordsKey: string
 ) => {
   try {
+    // const usersWords = await redis.client.hGetAll(usersWordsKey)
+    const usersWords = await redis.client.lRange("test", 0, -1)
+    console.log("UsersWords: ", usersWords)
     // Fetch the words the user doesn't know
     const unknownWords = await redis.client.sDiff([
       commonWordsKey,
