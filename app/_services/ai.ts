@@ -84,6 +84,7 @@ export const getWordDataViaGPT = async (word: string, language: string, context?
   }
 };
 export const generateFromLeonardo = async (prompt: string) => {
+  console.log("Generating Leonardo Image....")
   const apiKey = process.env.LEONARDO_API_KEY;
   // const leonardo = new LeonardoCore({
   //   bearerAuth: `Bearer ${apiKey}`,
@@ -126,6 +127,7 @@ export const generateFromLeonardo = async (prompt: string) => {
 };
 
 export const retrieveImageFromLeonardo = async (imageId: string) => {
+  console.log("Retrieving image from leonardo....")
   const leonardo = new Leonardo({
     bearerAuth: process.env.LEONARDO_API_KEY,
   });
@@ -185,86 +187,3 @@ const streamToBuffer = async (
     throw error;
   }
 };
-
-// export const parseArticleTitleByMarkdown = (markdown: string) => {};
-
-// export const getPresiseArticleDataFromPerplexity = async (
-//   data: ArticleNode
-// ) => {
-//   const { references, ...articleInfo } = data;
-//   console.log('Filling out missing information from: ', articleInfo);
-//   let openai;
-//   const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
-
-//   try {
-//     if (!PERPLEXITY_API_KEY) {
-//       throw new Error(
-//         'PERPLEXITY_API_KEY is not set in the environment variables.'
-//       );
-//     }
-//     openai = new OpenAI({
-//       apiKey: PERPLEXITY_API_KEY,
-//       baseURL: 'https://api.perplexity.ai',
-//     });
-//   } catch (error) {
-//     console.error('Error initializing OpenAI client:', error);
-//     return { error: 'Failed to initialize OpenAI client.' };
-//   }
-
-//   try {
-//     if (!openai) {
-//       throw new Error('OpenAI client is not properly initialized.');
-//     }
-//     console.log('Receieved Article, parsing missing information....');
-//     // Check if the PDF contains text
-//     if (!data.title) {
-//       throw new Error('No readable title found in the Article Information.');
-//     }
-
-//     // Create a prompt for the OpenAI API
-//     const prompt = `Fill out the missing data in this Article object, given the title of ${
-//       data.title
-//     }. The article information is as follows, where the certain fields have missing data.
-//         ${JSON.stringify(articleInfo)}
-
-//       Provide me the article filled with the missing information where you can find it, in the following JSON schema. Dont give me anything else except this schema.
-//       Object Schema:
-//       type ArticleNode = {
-//         journal: string | null;
-//         authors: string[];
-//         publication_date: string | null;
-//         pdf_url: string | null;
-//         abstract: string | null;
-//         title: string | null;
-//         display_name: string;
-//       };
-//     `;
-
-//     // Send the prompt to OpenAI for processing
-//     const completion = await openai.chat.completions.create({
-//       messages: [{ content: prompt, role: 'user' }],
-//       model: 'llama-3.1-sonar-large-128k-online',
-//     });
-//     let content = completion.choices[0].message.content;
-//     console.log('CONTENT GENERATED: ', content);
-
-//     if (!content) {
-//       console.error('Failed to generate');
-//       return [];
-//     }
-
-//     // Remove markdown backticks and extra formatting
-//     content = content
-//       .replace(/```json/g, '')
-//       .replace(/```/g, '')
-//       .trim();
-
-//     // Parse the response to extract analysis
-//     const analysisResult = JSON.parse(content);
-//     console.info('Analysis Result:', analysisResult);
-//     return analysisResult;
-//   } catch (error) {
-//     console.error('Error in analyzePaper function:', error);
-//     return { error: 'An error occurred while analyzing the file.' };
-//   }
-// };

@@ -5,18 +5,18 @@ import { BiPlayCircle } from 'react-icons/bi';
 
 interface FlashCardProps {
   card: Partial<Word>;
-  imageGenerated: boolean;
   cardOptions: ReactElement;
 }
 
 export default function FlashCard(props: FlashCardProps) {
   const card = props.card;
+  console.log('Card: ', card);
   return (
     <div>
       <div className="flex gap-x-4 mt-10">
-        {props.imageGenerated ? (
+        {card.imageUrl ? (
           <Image
-            src="/images/dragon.jpg"
+            src={card.imageUrl}
             width={320}
             height={480}
             alt="flashcard image"
@@ -32,22 +32,17 @@ export default function FlashCard(props: FlashCardProps) {
                 <h1 className="text-white text-4xl font-medium">
                   {card.displayText}{' '}
                 </h1>
-                <p className="italic font-sans text-white/80 pt-1">
+                <p className="italic font-sans text-white/60 self-end text-sm">
                   {card?.pinyin || card.phoneticTranscription}
                 </p>
               </div>
               <p className="text-white/80 font-sans max-w-xl text-left mt-1">
-                Russian fairy tales nearly saw their extinction in the wake of
-                Soviet rule because communist proponents found folklore
-                detrimental to furthering their ideals.
+                {card.mnemonic}
               </p>
             </div>
           </div>
 
-          <p className="text-white/80 font-sans italic text-sm max-w-xl text-left mt-1">
-            {card.mnemonic}
-          </p>
-          <p className="text-white/80 font-sans italic text-sm max-w-xl text-left mt-1">
+          <p className="text-white/80 font-sans italic text-sm text-left mt-1 max-w-sm">
             {card.funFact}
           </p>
         </div>
