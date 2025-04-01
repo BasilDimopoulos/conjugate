@@ -1,29 +1,27 @@
 import { getUser } from '@/app/_services/user';
 import { InductionWizard } from './setup/InductionWizard';
 import { prisma } from '@/utils/db';
-import FlashCard from '@/app/_components/flashcard';
-import { getDiff } from '@/app/_services/redis';
-import { greekMFUKey } from '@/app/_constants/constants';
 import { generateWordsForUser } from '@/app/_services/word';
 
 interface HomeComponent {
   user: string
+  skill: string
 }
 
-async function fetchUserSkills(userId: string) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/user?userId=${userId}`
-  );
+// async function fetchUserSkills(userId: string) {
+//   const response = await fetch(
+//     `${process.env.NEXT_PUBLIC_BACKEND_URL}/user?userId=${userId}`
+//   );
 
-  console.log('Response: ', response);
+//   console.log('Response: ', response);
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch skills');
-  }
+//   if (!response.ok) {
+//     throw new Error('Failed to fetch skills');
+//   }
 
-  const data = await response.json();
-  return data;
-}
+//   const data = await response.json();
+//   return data;
+// }
 
 async function fetchAvailableSkills() {
   const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/skills`);
@@ -47,12 +45,12 @@ export default async function Home() {
   if (!userData?.skills.length || userData?.skills.length < 1) {
     const availableSkills = await fetchAvailableSkills();
     return <InductionWizard skills={availableSkills} userId={userData.id} />;
-  } else return <HomeComponent user={userData.id}/>;
+  } else return <HomeComponent user={userData.id} skill={userData.mostRecentSkill}/>;
 }
 
 const HomeComponent = async(props: HomeComponent) => {
-  const unkownWords = await generateWordsForUser(10, props.user, 'greek')
-  console.log("The words to begin learning are: ", unkownWords)
+  const unknownWords = await generateWordsForUser(10, props.user, props.skill)
+  console.log("The words to begin learning are: ", unknownWords)
   return (
     // if words are less than 10
     <div className="flex flex-col items-center text-center">
