@@ -35,6 +35,7 @@ model UsersSkills {
   id               String   @id @default(uuid())
   skillId          String @unique
   userId           String  @unique
+  reasons          String[]
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)

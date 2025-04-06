@@ -4,7 +4,15 @@ import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.share
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { BiArrowToLeft, BiChevronRight, BiSolidCircle } from 'react-icons/bi';
+import {
+  BiArrowBack,
+  BiArrowToLeft,
+  BiCheckCircle,
+  BiChevronLeft,
+  BiChevronRight,
+  BiCircle,
+  BiSolidCircle,
+} from 'react-icons/bi';
 
 interface InductionProps {
   skills: Skill[];
@@ -75,6 +83,18 @@ export const InductionWizard = (props: InductionProps) => {
 };
 
 const LanguageFeature = (props: LanguageFeature) => {
+  const reasons = [
+    'Travel',
+    'New Connections',
+    'Career',
+    'Food and Culture',
+    'Love',
+    'History',
+    'Literature',
+    'Movies and TV Shows',
+  ];
+  const [userReasons, setUserReasons] = useState<string[]>([]);
+  const [currentPage, setPage] = useState('page1');
   const greetings = {
     chinese: { language: 'chinese', hello: '你好' },
     japanese: { language: 'japanese', hello: 'こんにちは)' },
@@ -91,7 +111,7 @@ const LanguageFeature = (props: LanguageFeature) => {
     },
   };
 
-  async function addSkills(userId: string, skills: string[]) {
+  async function addSkills(userId: string, skills: string[], userReasons: string[]) {
     console.log('UserId: ', userId);
     try {
       const response = await fetch(
@@ -101,7 +121,7 @@ const LanguageFeature = (props: LanguageFeature) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userId, skills }),
+          body: JSON.stringify({ userId, skills, reasons: userReasons }),
         }
       );
 
@@ -124,42 +144,91 @@ const LanguageFeature = (props: LanguageFeature) => {
     <div className="flex flex-col items-center justify-center h-full w-full">
       <div className="container max-w-screen-xl flex h-full pt-10">
         <div className="w-[75%] flex flex-col justify-center gap-x-5 relative">
-          <BiArrowToLeft
-            className="text-white text-lg mb-3 cursor-pointer"
+          {/* <BiArrowBack
+            className="text-white text-lg mb-3 cursor-pointer absolute top-10"
             onClick={() => props.goBack()}
-          />
-          <p className="italic text-white text-left font-light pb-1">
-            {greetings[props.selectedLanguage].hello} 👋
-          </p>
-          <h2 className="text-white font-medium text-3xl capitalize pr-10">
-            Let&apos;s get started with your first {props.selectedLanguage}{' '}
-            words
-          </h2>
-          <div className="flex flex-col gap-y-10 mt-10">
-            {greetings[props.selectedLanguage].textBlocks?.map(
-              (item, index) => (
-                <LanguageFeatureRow
-                  text={item}
-                  key={index}
-                  blockColor={
-                    greetings[props.selectedLanguage]?.blockColor || '#FFFFFF'
-                  }
-                />
-              )
-            )}
-          </div>
-          <button
-            onClick={() => addSkills(props.userId, [props.skillId])}
-            className="bg-white absolute bottom-10 right-20 px-6 py-1.5 font-sans font-medium text-black/85 flex items-center justify-center gap-x-1"
-            style={{
-              backgroundColor:
-                greetings[props.selectedLanguage]?.buttonColor || 'white',
-            }}
-          >
-            <p>Lets Go</p>
-            <BiChevronRight size={20} />
-          </button>
+          /> */}
+          {currentPage === 'page1' && (
+            <>
+              <p className="italic text-white text-left font-light pb-1 text-sm">
+                {greetings[props.selectedLanguage].hello} 👋
+              </p>
+              <h2 className="text-white font-medium text-3xl capitalize pr-10">
+                Tell us a bit more about why you want to learn
+              </h2>
+              <div className="flex flex-wrap gap-5 mt-5">
+                {reasons.map((reason, index) => (
+                  <div
+                    className="w-[40%] text-white bg-[#3B353C] px-3 py-2 flex items-center justify-between"
+                    key={index}
+                    onClick={() => {
+                      if (userReasons.includes(reason)) {
+                        setUserReasons(userReasons.filter((r) => r !== reason));
+                      } else {
+                        setUserReasons([...userReasons, reason]);
+                      }
+                    }}
+                  >
+                    <p className="font-sans text-sm">{reason}</p>
+                    {userReasons.includes(reason) ? (
+                      <BiCheckCircle />
+                    ) : (
+                      <BiCircle />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setPage('page2')}
+                className="bg-white absolute bottom-10 right-20 px-6 py-1.5 font-sans font-medium text-black/85 flex items-center justify-center gap-x-1"
+                style={{
+                  backgroundColor:
+                    greetings[props.selectedLanguage]?.buttonColor || 'white',
+                }}
+              >
+                <p>Next</p>
+                <BiChevronRight size={20} />
+              </button>
+            </>
+          )}
+          {currentPage === 'page2' && (
+            <>
+              <p className="italic text-white text-left font-light pb-1 text-sm">
+                {greetings[props.selectedLanguage].hello} 👋
+              </p>
+              <h2 className="text-white font-medium text-3xl capitalize pr-10">
+                Let&apos;s get started with your first {props.selectedLanguage}{' '}
+                words
+              </h2>
+              <div className="flex flex-col gap-y-10 mt-10">
+                {greetings[props.selectedLanguage].textBlocks?.map(
+                  (item, index) => (
+                    <LanguageFeatureRow
+                      text={item}
+                      key={index}
+                      blockColor={
+                        greetings[props.selectedLanguage]?.blockColor ||
+                        '#FFFFFF'
+                      }
+                    />
+                  )
+                )}
+              </div>
+              <button
+                onClick={() => addSkills(props.userId, [props.skillId], userReasons)}
+                className="bg-white absolute bottom-10 right-20 px-6 py-1.5 font-sans font-medium text-black/85 flex items-center justify-center gap-x-1"
+                style={{
+                  backgroundColor:
+                    greetings[props.selectedLanguage]?.buttonColor || 'white',
+                }}
+              >
+                <p>Lets Go</p>
+                <BiChevronRight size={20} />
+              </button>
+            </>
+          )}
         </div>
+
         <div
           className="w-full h-full"
           style={{

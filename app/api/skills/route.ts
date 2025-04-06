@@ -15,7 +15,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, skills } = await req.json();
+    const { userId, skills, reasons } = await req.json();
+    console.log("UserReasons: ", reasons)
 
     if (!userId || !Array.isArray(skills) || skills.length === 0) {
       return NextResponse.json(
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest) {
       data: skills.map((skillId) => ({
         userId,
         skillId,
+        reasons
       })),
       skipDuplicates: true, // Avoid inserting duplicates
     });
