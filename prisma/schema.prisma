@@ -10,21 +10,22 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  clerkId   String?  @unique
-  redisId   String?
-  email     String   @unique
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  clerkId         String?  @unique
+  redisId         String?
+  email           String   @unique
   mostRecentSkill String?
 
-  skills UsersSkills[]
+  skills    UsersSkills[]
+  UsersWord UsersWord[]
 }
 
 model Skill {
-  id String @id @default(uuid())
-  type String
-  name String
+  id        String  @id @default(uuid())
+  type      String
+  name      String
   available Boolean @default(false)
   imageName String
 
@@ -32,10 +33,10 @@ model Skill {
 }
 
 model UsersSkills {
-  id               String   @id @default(uuid())
-  skillId          String @unique
-  userId           String  @unique
-  reasons          String[]
+  id      String   @id @default(uuid())
+  skillId String   @unique
+  userId  String   @unique
+  reasons String[]
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
@@ -43,7 +44,6 @@ model UsersSkills {
   @@index([userId])
   @@index([skillId])
 }
-
 
 model Word {
   id                    String        @id @default(uuid())
@@ -56,6 +56,7 @@ model Word {
   phoneticTranscription String?
   pinyin                String?
   generationId          String?       @unique
+  englishTranslation    String?
   translationsFrom      Translation[] @relation("WordToTranslation")
   translationsTo        Translation[] @relation("TranslatedWordToTranslation")
 }
@@ -64,6 +65,18 @@ model Language {
   id   String  @id @default(uuid())
   name String
   code String?
+}
+
+model UsersWord {
+  id             String   @id @default(uuid())
+  userId         String
+  word           String
+  level          Int
+  nextReviewTime DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Translation {

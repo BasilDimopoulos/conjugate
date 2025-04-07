@@ -1,11 +1,17 @@
 import { getUser } from '@/app/_services/user';
 import { InductionWizard } from './setup/InductionWizard';
 import { prisma } from '@/utils/db';
-import { generateWordsForUser } from '@/app/_services/word';
+import {
+  generateWordsForUser,
+  getFlashCardDataForWords,
+} from '@/app/_services/word';
+import FlashCard, { FlashCardHolder, NewFlashCardOptions } from '@/app/_components/flashcard';
+import { Word } from '@prisma/client';
+import { Suspense } from 'react';
 
 interface HomeComponent {
-  user: string
-  skill: string
+  userId: string;
+  skill: string;
 }
 
 // async function fetchUserSkills(userId: string) {
@@ -45,12 +51,13 @@ export default async function Home() {
   if (!userData?.skills.length || userData?.skills.length < 1) {
     const availableSkills = await fetchAvailableSkills();
     return <InductionWizard skills={availableSkills} userId={userData.id} />;
-  } else return <HomeComponent user={userData.id} skill={userData.mostRecentSkill}/>;
+  } else
+    return (
+      <HomeComponent userId={userData.id} skill={userData.mostRecentSkill} />
+    );
 }
 
-const HomeComponent = async(props: HomeComponent) => {
-  const unknownWords = await generateWordsForUser(10, props.user, props.skill)
-  console.log("The words to begin learning are: ", unknownWords)
+const HomeComponent = async (props: HomeComponent) => {
   return (
     // if words are less than 10
     <div className="flex flex-col items-center text-center">
@@ -61,6 +68,16 @@ const HomeComponent = async(props: HomeComponent) => {
         {' '}
         With these we can begin telling you stories
       </p>
+      <Suspense fallback={<p className="text-white mt-10">Loading flashcards...</p>}>
+        <FlashCardLoader {...props} />
+      </Suspense>
     </div>
   );
+};
+
+const FlashCardLoader = async ({ userId, skill }: { userId: string; skill: string }) => {
+  const unknownWords = await generateWordsForUser(3, userId, skill);
+  const words = await getFlashCardDataForWords(unknownWords, 'greek');
+
+  return <FlashCardHolder userId={userId} skill={skill} words={words} />;
 };

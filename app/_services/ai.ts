@@ -7,7 +7,11 @@ import { v4 as uuid } from 'uuid';
 import uploadFileToS3 from './s3';
 import { getStreamAsBuffer } from 'get-stream';
 
-export const getWordDataViaGPT = async (word: string, language: string, context?: string) => {
+export const getWordDataViaGPT = async (
+  word: string,
+  language: string,
+  context?: string
+) => {
   let openai;
   const OPENAI_API_KEY = process.env.OPENAI_KEY;
   console.log('Getting Data from OpenAi');
@@ -43,6 +47,7 @@ export const getWordDataViaGPT = async (word: string, language: string, context?
       The fun fact is anything throughout history or literature where the word was used in an interesting way.
       The phoneticTranscription is the pronunciation of the word in the phonetic alphabet.
       If the word is being translated from Chinese, Cantonese or any other language that uses pinyin, provide the pinyin. Otherwise use null.
+      Add the equivalent english word to the englishTranslation field.
       If there is no context provided, return the most used or generic translation of the word in cases of multiple meanings. The context for this word is ${context}
       The imagePrompt should be a description of the mnemonic in a way that aids the user in remembering the mnemonic. e.g "Bold acrylic painting, vibrant colors and textured brushstrokes. Character shouts Wo amidst exploding fireworks, surrounded by colorful swirls. Dynamic, energetic style, expressive pose, celebratory scene."
       Object Schema:
@@ -83,8 +88,9 @@ export const getWordDataViaGPT = async (word: string, language: string, context?
     return { error: 'An error occurred while analyzing the file.' };
   }
 };
+
 export const generateFromLeonardo = async (prompt: string) => {
-  console.log("Generating Leonardo Image....")
+  console.log('Generating Leonardo Image....');
   const apiKey = process.env.LEONARDO_API_KEY;
   // const leonardo = new LeonardoCore({
   //   bearerAuth: `Bearer ${apiKey}`,
@@ -127,7 +133,7 @@ export const generateFromLeonardo = async (prompt: string) => {
 };
 
 export const retrieveImageFromLeonardo = async (imageId: string) => {
-  console.log("Retrieving image from leonardo....")
+  console.log('Retrieving image from leonardo....');
   const leonardo = new Leonardo({
     bearerAuth: process.env.LEONARDO_API_KEY,
   });
@@ -161,7 +167,7 @@ export const createAudioFileFromText = async (
 
   try {
     const audioStream = await client.generate({
-      voice: '4VZIsMPtgggwNg7OXbPY',
+      voice: '20zUtLxCwVzsFDWub4sB',
       model_id: 'eleven_turbo_v2_5',
       text,
     });

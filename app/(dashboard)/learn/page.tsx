@@ -1,6 +1,6 @@
 'use client';
 import FlashCard from '@/app/_components/flashcard';
-import { NewFlashCardOptions } from '@/app/_components/FlashCardOptions';
+import { NewFlashCardOptions } from '@/app/_components/flashcard';
 import { getUser } from '@/app/_services/user';
 import { useEffect, useState } from 'react';
 

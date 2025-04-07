@@ -1,4 +1,4 @@
-"use server"
+'use server';
 import { prisma } from '@/utils/db';
 import { Word } from '@prisma/client';
 import {
@@ -6,8 +6,9 @@ import {
   generateFromLeonardo,
   getWordDataViaGPT,
 } from './ai';
-import { getDiff } from './redis';
+import { addWordToUserSet, getDiff } from './redis';
 import { greekMFUKey } from '../_constants/constants';
+import { calculateNextReviewTime } from './srs';
 
 export const generateWordsForUser = async (
   number: number,
@@ -17,16 +18,25 @@ export const generateWordsForUser = async (
   const userKey = `${userId}/${language}`;
   //check if redis key exists
   try {
-    //   const keyExists = redis.client.exists(userKey)
-    //   if(!keyExists) {
-    //     redis.client.hSet()
-    //   }
-    // }
-    const result = await getDiff(greekMFUKey, userKey);
+    const result = await getDiff(greekMFUKey, userKey, number);
     return result;
   } catch (error) {
     console.error('Couldnt get diff: ', error);
   }
+};
+
+export const getFlashCardDataForWords = async (
+  words: string[],
+  language: string
+) => {
+  const wordPromises = words.map(async (word) => {
+    console.log('Getting word information for, ', word);
+    return handleWordGenerationRequest(word, language);
+  });
+
+  const wordData = await Promise.all(wordPromises);
+  console.log('Returning: ', wordData);
+  return wordData;
 };
 
 export const saveWordInDatabase = async (data: Partial<Word>) => {
@@ -83,6 +93,29 @@ export const handleWordGenerationRequest = async (
     phoneticTranscription: wordInfo?.phoneticTranscription,
     pinyin: wordInfo?.pinyin,
     generationId: imageGenerationId,
+    englishTranslation: wordInfo?.englishTranslation
   });
   return newWord;
+};
+
+export const handleUserAddingWordToTheirList = async (
+  userId: string,
+  word: string,
+  language: string,
+  level: number
+) => {
+  try {
+    console.log("ADDING TO SET")
+    await addWordToUserSet(userId, language, word);
+    await prisma.usersWord.create({
+      data: {
+        userId: userId,
+        word: word,
+        level: level,
+        nextReviewTime: calculateNextReviewTime(level),
+      },
+    });
+  } catch (error) {
+    console.log('error: ', error);
+  }
 };

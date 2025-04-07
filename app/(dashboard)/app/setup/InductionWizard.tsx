@@ -5,10 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
-  BiArrowBack,
-  BiArrowToLeft,
   BiCheckCircle,
-  BiChevronLeft,
   BiChevronRight,
   BiCircle,
   BiSolidCircle,
@@ -59,7 +56,7 @@ export const InductionWizard = (props: InductionProps) => {
                 }}
               >
                 <Image
-                  src={`/images/${skill.imageName}`} // ✅ Added `/` to ensure correct path
+                  src={`/images/${skill.imageName}`} 
                   width={40}
                   height={40}
                   alt={skill.name}
