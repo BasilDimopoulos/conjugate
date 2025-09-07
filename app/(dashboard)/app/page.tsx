@@ -50,7 +50,7 @@ export default async function Home() {
 
   if (!userData?.skills.length || userData?.skills.length < 1) {
     const availableSkills = await fetchAvailableSkills();
-    return <InductionWizard skills={availableSkills} userId={userData.id} />;
+    // return <InductionWizard skills={availableSkills} userId={userData.id} />;
   } else
     return (
       <HomeComponent userId={userData.id} skill={userData.mostRecentSkill} />

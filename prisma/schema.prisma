@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["windows", "rhel-openssl-3.0.x", "rhel-openssl-1.0.x"]
+  binaryTargets = ["windows", "rhel-openssl-3.0.x", "rhel-openssl-1.0.x", "darwin-arm64"]
 }
 
 datasource db {
@@ -91,4 +91,56 @@ model Translation {
 
   @@index([wordId])
   @@index([translatedWordId])
+}
+
+model Scenario {
+  id           String   @id @default(uuid())
+  title        String
+  startSceneId String   // ID of the starting scene
+  scenes       Scene[]
+}
+
+model Scene {
+  id            String         @id @default(uuid())
+  scenario      Scenario       @relation(fields: [scenarioId], references: [id])
+  scenarioId    String
+  dialogues     Dialogue[]
+  playerChoices PlayerChoice[]
+  imageUrl String
+
+  PlayerChoice PlayerChoice[] @relation("NextScene")
+}
+
+model Dialogue {
+  id          String    @id @default(uuid())
+  text        String
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+  scene       Scene     @relation(fields: [sceneId], references: [id])
+  sceneId     String
+}
+
+model Character {
+  id      String     @id @default(uuid())
+  firstName    String
+  lastName String
+  imageUrl   String
+  lines   Dialogue[] // one-to-many: a character can speak many times
+}
+
+model PlayerChoice {
+  id          String  @id @default(uuid())
+  text        String
+
+  // Relation to current scene
+  scene       Scene   @relation(fields: [sceneId], references: [id])
+  sceneId     String
+
+  // Relation to next scene
+  nextScene   Scene   @relation("NextScene", fields: [nextSceneId], references: [id])
+  nextSceneId String
+
+  // Optional fields for conditions/effects
+  condition   String?
+  effects     String?
 }
