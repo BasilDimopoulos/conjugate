@@ -20,6 +20,8 @@ model User {
 
   skills    UsersSkills[]
   UsersWord UsersWord[]
+
+  UserStory UserStory[]
 }
 
 model Skill {
@@ -94,9 +96,9 @@ model Translation {
 }
 
 model Scenario {
-  id           String   @id @default(uuid())
+  id           String  @id @default(uuid())
   title        String
-  startSceneId String   // ID of the starting scene
+  startSceneId String // ID of the starting scene
   scenes       Scene[]
 }
 
@@ -106,7 +108,7 @@ model Scene {
   scenarioId    String
   dialogues     Dialogue[]
   playerChoices PlayerChoice[]
-  imageUrl String
+  imageUrl      String
 
   PlayerChoice PlayerChoice[] @relation("NextScene")
 }
@@ -121,26 +123,78 @@ model Dialogue {
 }
 
 model Character {
-  id      String     @id @default(uuid())
-  firstName    String
-  lastName String
-  imageUrl   String
-  lines   Dialogue[] // one-to-many: a character can speak many times
+  id        String     @id @default(uuid())
+  firstName String
+  lastName  String
+  imageUrl  String
+  lines     Dialogue[] // one-to-many: a character can speak many times
 }
 
 model PlayerChoice {
-  id          String  @id @default(uuid())
-  text        String
+  id   String @id @default(uuid())
+  text String
 
   // Relation to current scene
-  scene       Scene   @relation(fields: [sceneId], references: [id])
-  sceneId     String
+  scene   Scene  @relation(fields: [sceneId], references: [id])
+  sceneId String
 
   // Relation to next scene
-  nextScene   Scene   @relation("NextScene", fields: [nextSceneId], references: [id])
+  nextScene   Scene  @relation("NextScene", fields: [nextSceneId], references: [id])
   nextSceneId String
 
   // Optional fields for conditions/effects
-  condition   String?
-  effects     String?
+  condition String?
+  effects   String?
+}
+
+model Story {
+  id                     String @id @default(uuid())
+  title                  String
+  vectorClassificationId String
+  imageUrl               String
+  description            String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserStory {
+  id             String      @id @default(uuid())
+  userId         String
+  storyId        String
+  storyLog       StoryLog?
+  sceneLog       SceneLog?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  Chapter Chapter[]
+}
+
+model Chapter {
+  id          String    @id @default(uuid())
+  userStoryId String
+  title       String
+  goals       String     // text field for chapter goals
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  userStory   UserStory  @relation(fields: [userStoryId], references: [id])
+}
+
+model StoryLog {
+  id          String   @id @default(uuid())
+  userStoryId String   @unique
+  keyMoments  String[] 
+
+  userStory UserStory @relation(fields: [userStoryId], references: [id])
+}
+
+model SceneLog {
+  id          String   @id @default(uuid())
+  userStoryId String @unique
+  sceneId     String
+  dialoguesSeen String[] // stores dialogue IDs seen
+
+  userStory UserStory @relation(fields: [userStoryId], references: [id])
 }
