@@ -39,7 +39,7 @@ export const getFlashCardDataForWords = async (
   return wordData;
 };
 
-export const saveWordInDatabase = async (data: Partial<Word>) => {
+export const saveWordInDatabase = async (data: Partial<Word> & { displayText: string; languageId: string }) => {
   try {
     const word = await prisma.word.create({
       data,
@@ -112,7 +112,7 @@ export const handleUserAddingWordToTheirList = async (
         userId: userId,
         word: word,
         level: level,
-        nextReviewTime: calculateNextReviewTime(level),
+        nextReviewTime: await calculateNextReviewTime(level),
       },
     });
   } catch (error) {

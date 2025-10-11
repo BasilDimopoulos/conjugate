@@ -74,13 +74,22 @@ model Language {
 model UsersWord {
   id             String   @id @default(uuid())
   userId         String
-  word           String
-  level          Int
+  wordId         String?  // Reference to Word table
+  word           String   // Keep for backwards compatibility
+  level          Int      @default(0)
+  repetitions    Int      @default(0)
+  easeFactor     Float    @default(2.5)
+  interval       Int      @default(0)
   nextReviewTime DateTime
+  lastReviewed   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([nextReviewTime])
+  @@index([userId, nextReviewTime])
 }
 
 model Translation {

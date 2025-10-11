@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Calculate the next review time based on the word's level
-      const nextReviewTime = calculateNextReviewTime(level);
+      const nextReviewTime = await calculateNextReviewTime(level);
 
       // Convert the nextReviewTime to a Unix timestamp for the score
       const score = nextReviewTime.getTime();

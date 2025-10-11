@@ -12,6 +12,7 @@ import {
 } from 'react-icons/bi';
 import { Word } from '@prisma/client';
 import { handleUserAddingWordToTheirList } from '../_services/word';
+import type { Difficulty } from '../_services/srs-types';
 
 interface FlashCardProps {
   card: Partial<Word>;
@@ -54,10 +55,12 @@ export default function FlashCard(props: FlashCardProps) {
         <div className="flex flex-col justify-between pt-2">
           <div>
             <div>
-              <BiPlayCircle
-                className="text-white -ml-0.5 text-3xl cursor-pointer"
-                onClick={() => playSound(card.pronunciationUrl)}
-              />
+              {card.pronunciationUrl && (
+                <BiPlayCircle
+                  className="text-white -ml-0.5 text-3xl cursor-pointer"
+                  onClick={() => playSound(card.pronunciationUrl!)}
+                />
+              )}
               <div className="flex items-center gap-x-2 mt-2">
                 <h1 className="text-white text-4xl font-medium">
                   {card.displayText}{' '}
@@ -94,8 +97,8 @@ export function NewFlashCardOptions(props: WordInformation) {
         onClick={() => {
           handleUserAddingWordToTheirList(
             props.userId,
-            props.word.displayText,
-            props.word.languageId,
+            props.word.displayText || '',
+            props.word.languageId || '',
             1
           );
           if (props?.extraActions) props.extraActions();
@@ -107,6 +110,46 @@ export function NewFlashCardOptions(props: WordInformation) {
       <button className="bg-black/40 w-32 h-8 flex items-center justify-between px-3">
         <p className="text-white/80 font-sans text-sm">I know this</p>
         <BiSticker className="text-orange-600" />
+      </button>
+    </div>
+  );
+}
+
+interface ReviewFlashCardOptionsProps {
+  userWordId: string;
+  onReview: (userWordId: string, difficulty: Difficulty) => void;
+}
+
+export function ReviewFlashCardOptions(props: ReviewFlashCardOptionsProps) {
+  return (
+    <div className="flex items-center gap-x-5 justify-center w-full mt-10">
+      <button 
+        className="bg-black/40 w-32 h-8 flex items-center justify-between px-3 hover:bg-black/60 transition-colors"
+        onClick={() => props.onReview(props.userWordId, 3)}
+      >
+        <p className="text-white/80 font-sans text-sm">Again</p>
+        <BiMinusCircle className="text-red-700" />
+      </button>
+      <button 
+        className="bg-black/40 w-32 h-8 flex items-center justify-between px-3 hover:bg-black/60 transition-colors"
+        onClick={() => props.onReview(props.userWordId, 0)}
+      >
+        <p className="text-white/80 font-sans text-sm">Hard</p>
+        <BiCircleHalf className="text-orange-700" />
+      </button>
+      <button 
+        className="bg-black/40 w-32 h-8 flex items-center justify-between px-3 hover:bg-black/60 transition-colors"
+        onClick={() => props.onReview(props.userWordId, 1)}
+      >
+        <p className="text-white/80 font-sans text-sm">Medium</p>
+        <BiCircleHalf className="text-yellow-600" />
+      </button>
+      <button 
+        className="bg-black/40 w-32 h-8 flex items-center justify-between px-3 hover:bg-black/60 transition-colors"
+        onClick={() => props.onReview(props.userWordId, 2)}
+      >
+        <p className="text-white/80 font-sans text-sm">Easy</p>
+        <BiCheckCircle className="text-green-700" />
       </button>
     </div>
   );
