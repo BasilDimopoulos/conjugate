@@ -1,13 +1,9 @@
+import { Chapter } from "@prisma/client";
+
 export interface Character {
   id: string;           
   name: string;           
   imageUrl: string;          
-}
-
-export interface Dialogue {
-  id: string;            
-  character: Character;   
-  text: string;           
 }
 
 export interface PlayerChoice {
@@ -17,10 +13,25 @@ export interface PlayerChoice {
   effects?: string[];    
 }
 
+export interface Character {
+  id: string;           
+  name: string;           
+  imageUrl: string;          
+}
+
+export interface Dialogue {
+  id: string;            
+  character: Character;   
+  text: string;          
+  audioUrl: string 
+}
+
 export interface Scene {
-  id: string;                    
-  dialogues?: Dialogue[];          
-  playerChoices?: PlayerChoice[];  
+  id: string; 
+  finalScene: boolean;
+  chapter: Chapter;                   
+  dialogues?: Dialogue[];
+  location: string;
   imageUrl: string;          
 }
 

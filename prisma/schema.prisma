@@ -22,6 +22,8 @@ model User {
   UsersWord UsersWord[]
 
   UserStory UserStory[]
+
+  StoryArc StoryArc[]
 }
 
 model Skill {
@@ -148,23 +150,25 @@ model PlayerChoice {
 }
 
 model Story {
-  id                     String @id @default(uuid())
+  id                     String   @id @default(uuid())
   title                  String
   vectorClassificationId String
   imageUrl               String
   description            String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  firstPrompt            String?
+  worldSetup             Json?
 }
 
 model UserStory {
-  id             String      @id @default(uuid())
-  userId         String
-  storyId        String
-  storyLog       StoryLog?
-  sceneLog       SceneLog?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id        String    @id @default(uuid())
+  userId    String
+  storyId   String
+  storyLog  StoryLog?
+  sceneLog  SceneLog?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
@@ -175,26 +179,105 @@ model Chapter {
   id          String    @id @default(uuid())
   userStoryId String
   title       String
-  goals       String     // text field for chapter goals
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  userStory   UserStory  @relation(fields: [userStoryId], references: [id])
+  goals       String // text field for chapter goals
+  keyEvents   String[]
+  inspiredBy  String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userStory   UserStory @relation(fields: [userStoryId], references: [id])
 }
 
 model StoryLog {
   id          String   @id @default(uuid())
   userStoryId String   @unique
-  keyMoments  String[] 
+  keyMoments  String[]
 
   userStory UserStory @relation(fields: [userStoryId], references: [id])
 }
 
 model SceneLog {
-  id          String   @id @default(uuid())
-  userStoryId String @unique
-  sceneId     String
+  id            String   @id @default(uuid())
+  userStoryId   String   @unique
+  sceneId       String
   dialoguesSeen String[] // stores dialogue IDs seen
 
   userStory UserStory @relation(fields: [userStoryId], references: [id])
+}
+
+model StoryArc {
+  id               String             @id @default(uuid())
+  arcId            String             @unique
+  arcName          String
+  focusCharacter   String
+  seriesContext    String
+  synopsis         String
+  themes           String[]           // ["legacy", "identity", etc.]
+  toneInspiration  String
+  toneBlend        String[]           // ["school life", "mystery", ...]
+  endingFeel       String
+
+  // relation to User
+  userId           String
+  user             User               @relation(fields: [userId], references: [id])
+
+  acts             Act[]
+  potentialOutcomes PotentialOutcome[]
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model Act {
+  id          String     @id @default(uuid())
+  actId       String
+  description String
+  keyEvents   String[]   // bullet list of events
+  completed   Boolean    @default(false)
+
+  quests      Quest[]
+  powers      Power[]
+  villainOptions VillainOption[]
+
+  storyArcId  String
+  storyArc    StoryArc   @relation(fields: [storyArcId], references: [id])
+}
+
+model Quest {
+  id          String   @id @default(uuid())
+  questId     String
+  name        String
+  objective   String
+  reward      String
+
+  actId       String
+  act         Act      @relation(fields: [actId], references: [id])
+}
+
+model Power {
+  id          String   @id @default(uuid())
+  powerId     String
+  name        String
+  effect      String
+  risk        String?
+
+  actId       String
+  act         Act      @relation(fields: [actId], references: [id])
+}
+
+model VillainOption {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+
+  actId       String
+  act         Act      @relation(fields: [actId], references: [id])
+}
+
+model PotentialOutcome {
+  id          String   @id @default(uuid())
+  outcomeId   String
+  description String
+
+  storyArcId  String
+  storyArc    StoryArc @relation(fields: [storyArcId], references: [id])
 }

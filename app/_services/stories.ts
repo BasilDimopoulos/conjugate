@@ -1,8 +1,6 @@
 'use server';
 
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from "@/utils/db";
 
 export const getStories = async () => {
   try {
@@ -16,9 +14,14 @@ export const getStories = async () => {
   }
 };
 
-//starting new story
-// make database entry for UserStory
-// Initialise Story Log
-// Send Ai to create first chapter structure
-// Initialise Chapter with that structure 
-// Create first scene
+export const getStoryById = async (id: string) => {
+  try {
+    const story = await prisma.story.findUnique({
+      where: { id },
+    });
+    return story;
+  } catch (error) {
+    console.error('❌ Error fetching story:', error);
+    throw new Error('Failed to fetch story');
+  }
+};
