@@ -1,19 +1,25 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BiArrowBack, BiBookOpen, BiTrash, BiTime, BiPlay } from 'react-icons/bi';
+import { BiArrowBack, BiBookOpen, BiTrash, BiTime, BiPlay, BiBook, BiLoader } from 'react-icons/bi';
 import { getUserContentLibrary, deleteSavedContent } from '@/app/_services/content';
 
 interface SavedContent {
   id: string;
   title: string;
-  text: string;
+  text: string | null;
   language: string;
   summary: string | null;
   sentiment: string | null;
   topic: string | null;
   difficulty: string | null;
   audioUrl: string | null;
+  contentType: string;
+  totalPages: number | null;
+  currentPage: number;
+  coverImage: string | null;
+  author: string | null;
+  sourceUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,8 +63,9 @@ export default function LibraryPage() {
     }
   };
 
-  const handleLoadContent = (contentId: string) => {
-    router.push(`/learn/add-content?id=${contentId}`);
+  const handleLoadContent = (content: SavedContent) => {
+    // If it's a book, load in book mode, otherwise regular text mode
+    router.push(`/learn/add-content?id=${content.id}`);
   };
 
   const formatDate = (date: Date) => {
@@ -136,17 +143,27 @@ export default function LibraryPage() {
                 <div className="p-6">
                   {/* Topic & Language */}
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-xl font-bold text-white line-clamp-2">
-                      {content.topic || content.title}
-                    </h3>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {content.contentType === 'book' && (
+                        <BiBook className="text-purple-400 shrink-0" />
+                      )}
+                      <h3 className="text-xl font-bold text-white line-clamp-2">
+                        {content.title}
+                      </h3>
+                    </div>
                     <span className="px-2 py-1 bg-blue-600/40 rounded text-xs font-semibold capitalize shrink-0 ml-2">
                       {content.language}
                     </span>
                   </div>
 
                   {/* Badges */}
-                  {(content.sentiment || content.difficulty) && (
+                  {(content.topic || content.sentiment || content.difficulty) && (
                     <div className="flex gap-2 mb-3 flex-wrap">
+                      {content.topic && (
+                        <span className="px-2 py-1 bg-blue-600/30 rounded-full text-xs">
+                          🏷️ {content.topic}
+                        </span>
+                      )}
                       {content.sentiment && (
                         <span className="px-2 py-1 bg-purple-600/30 rounded-full text-xs">
                           {content.sentiment}
@@ -167,11 +184,29 @@ export default function LibraryPage() {
                     </p>
                   )}
 
-                  {/* Text Preview */}
-                  <p className="text-white/40 text-sm italic mb-4 line-clamp-2">
-                    "{content.text.substring(0, 100)}
-                    {content.text.length > 100 ? '...' : ''}"
-                  </p>
+                  {/* Text Preview or Book Info */}
+                  {content.contentType === 'book' ? (
+                    <div className="text-white/40 text-sm mb-4">
+                      <p className="flex items-center gap-2">
+                        📖 {content.totalPages} pages
+                        {content.currentPage > 0 && (
+                          <span className="text-purple-400">
+                            • Page {content.currentPage + 1}
+                          </span>
+                        )}
+                      </p>
+                      {content.author && (
+                        <p className="text-xs mt-1">by {content.author}</p>
+                      )}
+                    </div>
+                  ) : (
+                    content.text && (
+                      <p className="text-white/40 text-sm italic mb-4 line-clamp-2">
+                        "{content.text.substring(0, 100)}
+                        {content.text.length > 100 ? '...' : ''}"
+                      </p>
+                    )
+                  )}
 
                   {/* Metadata */}
                   <div className="flex items-center gap-2 text-white/40 text-xs mb-4">
@@ -189,10 +224,10 @@ export default function LibraryPage() {
                   {/* Actions */}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleLoadContent(content.id)}
+                      onClick={() => handleLoadContent(content)}
                       className="flex-1 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                     >
-                      Open
+                      {content.contentType === 'book' ? '📖 Read Book' : 'Open'}
                     </button>
                     <button
                       onClick={() => handleDelete(content.id)}

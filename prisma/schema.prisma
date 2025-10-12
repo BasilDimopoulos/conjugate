@@ -291,22 +291,34 @@ model PotentialOutcome {
 }
 
 model UserContent {
-  id         String   @id @default(uuid())
-  userId     String
-  title      String
-  text       String   @db.Text
-  language   String
-  summary    String?  @db.Text
-  sentiment  String?
-  topic      String?
-  difficulty String?
-  audioUrl   String?  @db.Text
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  text        String?  @db.Text
+  language    String
+  summary     String?  @db.Text
+  sentiment   String?
+  topic       String?
+  difficulty  String?
+  audioUrl    String?  @db.Text
+  hasFullAudio Boolean @default(false)     // Track if full audio (not just preview) has been generated
+  
+  // Book mode fields
+  contentType   String   @default("text")  // "text" or "book"
+  sourceUrl     String?                    // Original article URL
+  pages         Json?                      // Array of page objects
+  totalPages    Int?                       // Number of pages
+  currentPage   Int      @default(0)       // Last read page
+  coverImage    String?                    // Cover image URL
+  author        String?                    // Article author
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, createdAt])
   @@index([language])
+  @@index([contentType])
 }

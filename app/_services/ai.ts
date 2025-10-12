@@ -182,6 +182,60 @@ export const createAudioFileFromText = async (
   }
 };
 
+/**
+ * Generate audio for article text with language support
+ * Uploads to S3 and returns URL
+ */
+export const generateArticleAudio = async (
+  text: string,
+  language: string,
+  initialOnly: boolean = true
+): Promise<string | null> => {
+  const client = new ElevenLabsClient({
+    apiKey: process.env.ELEVENLABS_API_KEY,
+  });
+
+  // Map language to ElevenLabs voice ID
+  const voiceMap: Record<string, string> = {
+    chinese: process.env.CHINESE_ELEVEN_LABS_ID || '21m00Tcm4TlvDq8ikWAM',
+    japanese: process.env.JAPANESE_ELEVEN_LABS_ID || 'AZnzlk1XvdvUeBnXmlld',
+    korean: process.env.KOREAN_ELEVEN_LABS_ID || 'EXAVITQu4vr4xnSDxMaL',
+    greek: process.env.GREEK_ELEVEN_LABS_ID || 'n0vzWypeCK1NlWPVwhOc',
+    spanish: process.env.SPANISH_ELEVEN_LABS_ID || 'ErXwobaYiN019PkySvjV',
+    french: process.env.FRENCH_ELEVEN_LABS_ID || 'MF3mGyEYCl7XYWbV9V6O',
+    russian: process.env.RUSSIAN_ELEVEN_LABS_ID || '21m00Tcm4TlvDq8ikWAM',
+  };
+
+  const voiceId = voiceMap[language.toLowerCase()] || '21m00Tcm4TlvDq8ikWAM';
+
+  try {
+    console.log(`Generating ${initialOnly ? 'initial' : 'full'} audio for ${language} with voice ${voiceId}...`);
+    
+    // Generate only first ~100 words initially (about 700 characters)
+    // Or full text if requested
+    const maxChars = initialOnly ? 700 : 2500;
+    const limitedText = text.substring(0, maxChars);
+    console.log(`Text limited to ${limitedText.length} characters`);
+    
+    const audioStream = await client.generate({
+      voice: voiceId,
+      model_id: 'eleven_turbo_v2_5', // Use turbo model for faster generation
+      text: limitedText,
+    });
+
+    const fileName = `article-${initialOnly ? 'preview' : 'full'}-${uuid()}.mp3`;
+    const audioBuffer = await streamToBuffer(audioStream);
+    const url = await uploadFileToS3(audioBuffer, fileName);
+    
+    console.log(`${initialOnly ? 'Initial' : 'Full'} audio generated and uploaded: ${url}`);
+    return url;
+  } catch (error) {
+    console.error('Error generating article audio:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    return null; // Return null instead of throwing - audio is optional
+  }
+};
+
 const streamToBuffer = async (
   stream: NodeJS.ReadableStream
 ): Promise<Buffer> => {

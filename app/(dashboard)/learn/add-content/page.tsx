@@ -4,6 +4,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { BiArrowBack, BiPlay, BiLoader, BiX, BiPlusCircle, BiCheckCircle, BiBookmark } from 'react-icons/bi';
 import { checkWordsInDeck, addWordFromContent, getOrCreateWordFlashcard, isWordInUserDeck, checkWordImageReady, analyzeTextContent, saveContentToLibrary, getSavedContent } from '@/app/_services/content';
 import { getUser, getUserLanguage } from '@/app/_services/user';
+import { createBookFromURL } from '@/app/_services/book-builder';
+import { createBookFromYouTube } from '@/app/_services/youtube-book';
+import BookReader from '@/app/_components/BookReader';
+import type { BookPage } from '@/app/_services/book-utils';
 import Image from 'next/image';
 import type { Word } from '@prisma/client';
 
@@ -39,8 +43,22 @@ export default function AddContentPage() {
   const searchParams = useSearchParams();
   const contentId = searchParams.get('id');
   
+  const [inputMode, setInputMode] = useState<'text' | 'url' | 'youtube'>('text');
   const [text, setText] = useState('');
+  const [url, setUrl] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [language, setLanguage] = useState('chinese');
+  
+  // Book mode state
+  const [bookMode, setBookMode] = useState(false);
+  const [bookData, setBookData] = useState<{
+    id: string;
+    title: string;
+    pages: BookPage[];
+    language: string;
+    audioUrl?: string | null;
+    hasFullAudio?: boolean;
+  } | null>(null);
   const [processing, setProcessing] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -60,6 +78,13 @@ export default function AddContentPage() {
   const [wordInDeck, setWordInDeck] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const imagePollingInterval = useRef<NodeJS.Timeout | null>(null);
+  
+  // Text selection translation state
+  const [selectedText, setSelectedText] = useState<string>('');
+  const [translationPopup, setTranslationPopup] = useState(false);
+  const [translation, setTranslation] = useState<string>('');
+  const [loadingTranslation, setLoadingTranslation] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -86,9 +111,27 @@ export default function AddContentPage() {
         const savedContent = await getSavedContent(contentId);
         
         if (savedContent) {
-          setText(savedContent.text);
           setLanguage(savedContent.language);
           setSavedContentId(savedContent.id);
+          
+          // Check if it's a book
+          if (savedContent.contentType === 'book' && savedContent.pages) {
+            // Load in book mode
+            setBookData({
+              id: savedContent.id,
+              title: savedContent.title,
+              pages: savedContent.pages as any as BookPage[],
+              language: savedContent.language,
+              audioUrl: savedContent.audioUrl || null,
+              hasFullAudio: (savedContent as any).hasFullAudio || false, // Track full audio status
+            });
+            setBookMode(true);
+            setLoadingSavedContent(false);
+            return;
+          }
+          
+          // Regular text mode
+          setText(savedContent.text || '');
           
           // Set analysis if available
           if (savedContent.summary) {
@@ -123,6 +166,8 @@ export default function AddContentPage() {
 
   const processLoadedContent = async (savedContent: SavedContent) => {
     try {
+      if (!savedContent.text) return;
+      
       // Split text into words
       const isCJK = ['chinese', 'japanese', 'korean'].includes(savedContent.language);
       const words = isCJK
@@ -149,6 +194,74 @@ export default function AddContentPage() {
       setWordStatuses(wordStatusesData);
     } catch (error) {
       console.error('Error processing loaded content:', error);
+    }
+  };
+
+  const createBookFromURLHandler = async () => {
+    if (!url.trim()) return;
+
+    setProcessing(true);
+    try {
+      const book = await createBookFromURL(url, language);
+      
+      if (!book) {
+        throw new Error('Failed to create book from URL');
+      }
+
+      console.log('Book created with audio URL:', book.audioUrl);
+
+      // Switch to book mode
+      setBookData({
+        id: book.id,
+        title: book.title,
+        pages: book.pages as BookPage[],
+        language: book.language,
+        audioUrl: book.audioUrl || null,
+        hasFullAudio: false, // Initial audio only (700 chars)
+      });
+      setBookMode(true);
+    } catch (error) {
+      console.error('Error creating book from URL:', error);
+      alert('Failed to create book. Please check the URL and try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const createBookFromYouTubeHandler = async () => {
+    if (!youtubeUrl.trim()) return;
+
+    setProcessing(true);
+    try {
+      const book = await createBookFromYouTube(youtubeUrl, language);
+      
+      if (!book) {
+        throw new Error('Failed to create book from YouTube video');
+      }
+
+      console.log('YouTube book created:', book.title);
+
+      // Switch to book mode
+      setBookData({
+        id: book.id,
+        title: book.title,
+        pages: book.pages as BookPage[],
+        language: book.language,
+        audioUrl: book.audioUrl || null, // Original YouTube audio uploaded to S3
+        hasFullAudio: true, // Full audio from YouTube, not partial
+      });
+      setBookMode(true);
+    } catch (error) {
+      console.error('Error creating book from YouTube:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      if (errorMessage.includes('RAPIDAPI_KEY')) {
+        alert('Please add RAPIDAPI_KEY to your .env file.\n\nGet a free key at: https://rapidapi.com/\nSee RAPIDAPI_SETUP.md for instructions.');
+      } else {
+        alert(`Failed to create book from YouTube.\n\nError: ${errorMessage}\n\nPlease check the video URL and try again.`);
+      }
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -243,6 +356,63 @@ export default function AddContentPage() {
       audio.onended = () => setAudioPlaying(false);
       audio.play();
     }
+  };
+
+  const handleTextSelection = async () => {
+    const selection = window.getSelection();
+    const text = selection?.toString().trim();
+    
+    if (text && text.length > 1) {
+      setSelectedText(text);
+      
+      // Get the position for the popup
+      const range = selection?.getRangeAt(0);
+      const rect = range?.getBoundingClientRect();
+      
+      if (rect) {
+        setPopupPosition({
+          x: rect.left + rect.width / 2,
+          y: rect.top - 10
+        });
+      }
+      
+      setTranslationPopup(true);
+      setLoadingTranslation(true);
+      
+      try {
+        // Call translation API
+        const response = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text,
+            targetLanguage: 'english',
+            sourceLanguage: language || undefined // Allow auto-detection
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          console.error('Translation API error:', data);
+          setTranslation(data.error || 'Translation failed');
+        } else {
+          setTranslation(data.translation || 'Translation unavailable');
+        }
+      } catch (error) {
+        console.error('Translation error:', error);
+        setTranslation('Translation failed');
+      } finally {
+        setLoadingTranslation(false);
+      }
+    }
+  };
+
+  const closeTranslationPopup = () => {
+    setTranslationPopup(false);
+    setSelectedText('');
+    setTranslation('');
+    window.getSelection()?.removeAllRanges();
   };
 
   const handleWordClick = async (wordStatus: WordStatus) => {
@@ -380,6 +550,26 @@ export default function AddContentPage() {
     );
   }
 
+  // Book Reader Mode
+  if (bookMode && bookData) {
+    return (
+      <BookReader
+        bookId={bookData.id}
+        title={bookData.title}
+        language={bookData.language}
+        pages={bookData.pages}
+        userId={userId}
+        audioUrl={bookData.audioUrl || null}
+        hasFullAudio={bookData.hasFullAudio || false}
+        onClose={() => {
+          setBookMode(false);
+          setBookData(null);
+          router.push('/learn/library');
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen text-white/80 px-4 py-8">
       <div className="max-w-4xl mx-auto">
@@ -416,6 +606,40 @@ export default function AddContentPage() {
         {/* Input Section */}
         {wordStatuses.length === 0 && (
           <div className="bg-black/40 rounded-lg p-6 mb-6">
+            {/* Input Mode Tabs */}
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setInputMode('text')}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                  inputMode === 'text'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20'
+                }`}
+              >
+                Paste Text
+              </button>
+              <button
+                onClick={() => setInputMode('url')}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                  inputMode === 'url'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20'
+                }`}
+              >
+                Article URL
+              </button>
+              <button
+                onClick={() => setInputMode('youtube')}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                  inputMode === 'youtube'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20'
+                }`}
+              >
+                📺 YouTube
+              </button>
+            </div>
+
             <label className="block text-sm font-semibold mb-2">
               Language {loadingLanguage && <span className="text-white/40 text-xs">(detecting...)</span>}
             </label>
@@ -434,30 +658,116 @@ export default function AddContentPage() {
               <option value="russian">Russian</option>
             </select>
 
-            <label className="block text-sm font-semibold mb-2">
-              Paste your text
-            </label>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Paste text in your target language here..."
-              className="w-full h-48 bg-black/60 rounded px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-            />
+            {/* Text Input Mode */}
+            {inputMode === 'text' && (
+              <>
+                <label className="block text-sm font-semibold mb-2">
+                  Paste your text
+                </label>
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Paste text in your target language here..."
+                  className="w-full h-48 bg-black/60 rounded px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                />
 
-            <button
-              onClick={processText}
-              disabled={processing || !text.trim()}
-              className="mt-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition-colors w-full flex items-center justify-center gap-2"
-            >
-              {processing ? (
-                <>
-                  <BiLoader className="text-xl animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Process Text'
-              )}
-            </button>
+                <button
+                  onClick={processText}
+                  disabled={processing || !text.trim()}
+                  className="mt-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition-colors w-full flex items-center justify-center gap-2"
+                >
+                  {processing ? (
+                    <>
+                      <BiLoader className="text-xl animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Process Text'
+                  )}
+                </button>
+              </>
+            )}
+
+            {/* URL Input Mode */}
+            {inputMode === 'url' && (
+              <>
+                <label className="block text-sm font-semibold mb-2">
+                  Article URL
+                </label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com/article"
+                  className="w-full bg-black/60 rounded px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 mb-4"
+                />
+
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+                  <h4 className="text-sm font-semibold text-blue-300 mb-2">📚 Book Mode</h4>
+                  <p className="text-xs text-white/60">
+                    We'll fetch the article, break it into beautiful pages with images,
+                    and create an interactive ebook you can flip through!
+                  </p>
+                </div>
+
+                <button
+                  onClick={createBookFromURLHandler}
+                  disabled={processing || !url.trim()}
+                  className="mt-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition-colors w-full flex items-center justify-center gap-2"
+                >
+                  {processing ? (
+                    <>
+                      <BiLoader className="text-xl animate-spin" />
+                      Creating Book...
+                    </>
+                  ) : (
+                    '📖 Create Book'
+                  )}
+                </button>
+              </>
+            )}
+
+            {/* YouTube Input Mode */}
+            {inputMode === 'youtube' && (
+              <>
+                <label className="block text-sm font-semibold mb-2">
+                  YouTube Video URL
+                </label>
+                <input
+                  type="url"
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="w-full bg-black/60 rounded px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 mb-4"
+                />
+
+                <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-blue-200">
+                    📺 <strong>YouTube to Interactive Book</strong>
+                  </p>
+                  <p className="text-xs text-blue-300/80 mt-2">
+                    Downloads the video audio and uses AI to transcribe it into text, 
+                    then creates an interactive ebook where you can click words to learn 
+                    vocabulary! Works with any public YouTube video.
+                  </p>
+                </div>
+
+                <button
+                  onClick={createBookFromYouTubeHandler}
+                  disabled={processing || !youtubeUrl.trim()}
+                  className="mt-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition-colors w-full flex items-center justify-center gap-2"
+                >
+                  {processing ? (
+                    <>
+                      <BiLoader className="text-xl animate-spin" />
+                      Transcribing Video...
+                    </>
+                  ) : (
+                    '📺 Create Book from Video'
+                  )}
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -518,7 +828,10 @@ export default function AddContentPage() {
 
             {/* Interactive Text */}
             <div className="bg-black/40 rounded-lg p-8">
-              <div className="text-xl leading-relaxed flex flex-wrap gap-1">
+              <div 
+                className="text-xl leading-relaxed flex flex-wrap gap-1"
+                onMouseUp={handleTextSelection}
+              >
                 {wordStatuses.map((wordStatus, index) => (
                   <span
                     key={index}
@@ -581,6 +894,53 @@ export default function AddContentPage() {
           </div>
         )}
       </div>
+
+      {/* Translation Popup */}
+      {translationPopup && (
+        <div
+          className="fixed z-[55] bg-white rounded-lg shadow-2xl border border-gray-200 max-w-md"
+          style={{
+            left: `${popupPosition.x}px`,
+            top: `${popupPosition.y}px`,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          <div className="p-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-500 mb-1">Selected:</p>
+                <p className="text-base text-gray-900 font-medium">{selectedText}</p>
+              </div>
+              <button
+                onClick={closeTranslationPopup}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <BiX className="text-xl" />
+              </button>
+            </div>
+            
+            <div className="border-t border-gray-200 pt-3">
+              <p className="text-sm font-semibold text-purple-600 mb-1">Translation:</p>
+              {loadingTranslation ? (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <BiLoader className="animate-spin" />
+                  <span className="text-sm">Translating...</span>
+                </div>
+              ) : (
+                <p className="text-base text-gray-700">{translation}</p>
+              )}
+            </div>
+          </div>
+          
+          {/* Arrow pointing down to selected text */}
+          <div 
+            className="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full"
+            style={{ width: 0, height: 0 }}
+          >
+            <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white"></div>
+          </div>
+        </div>
+      )}
 
       {/* Sliding Sidebar */}
       <div
