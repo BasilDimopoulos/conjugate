@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { Word } from '@prisma/client';
 import { getReviewDeck, updateWordReview, getUserVocabStats } from '@/app/_services/srs';
 import type { Difficulty } from '@/app/_services/srs-types';
+import { useRouter } from 'next/navigation';
+import { BiBookOpen, BiBookmark } from 'react-icons/bi';
 
 interface ReviewWord {
   userWordId: string;
@@ -25,6 +27,7 @@ interface VocabStats {
 }
 
 export default function LearnPage() {
+  const router = useRouter();
   const [reviewWords, setReviewWords] = useState<ReviewWord[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -139,12 +142,21 @@ export default function LearnPage() {
             </div>
           )}
           
-          <button
-            onClick={resetSession}
-            className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition-colors"
-          >
-            Check for More Reviews
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={resetSession}
+              className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition-colors"
+            >
+              Check for More Reviews
+            </button>
+            <button
+              onClick={() => router.push('/learn/add-content')}
+              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
+            >
+              <BiBookOpen className="text-xl" />
+              Add Content
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -158,7 +170,7 @@ export default function LearnPage() {
           <p className="text-xl mb-8">Come back later or add more words to your deck!</p>
           
           {stats && (
-            <div className="bg-black/40 rounded-lg p-6 max-w-md">
+            <div className="bg-black/40 rounded-lg p-6 mb-6 max-w-md">
               <h2 className="text-xl font-semibold mb-4">Your Vocabulary</h2>
               <div className="grid grid-cols-2 gap-4 text-left">
                 <div>
@@ -172,6 +184,14 @@ export default function LearnPage() {
               </div>
             </div>
           )}
+          
+          <button
+            onClick={() => router.push('/learn/add-content')}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 mx-auto"
+          >
+            <BiBookOpen className="text-xl" />
+            Add Content
+          </button>
         </div>
       </div>
     );
@@ -181,6 +201,24 @@ export default function LearnPage() {
 
   return (
     <div className="flex flex-col items-center text-white/80 px-4 py-8">
+      {/* Quick Actions */}
+      <div className="w-full max-w-2xl mb-6 flex justify-end gap-2">
+        <button
+          onClick={() => router.push('/learn/library')}
+          className="bg-green-600/20 hover:bg-green-600/40 border border-green-500/30 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+        >
+          <BiBookmark />
+          Library
+        </button>
+        <button
+          onClick={() => router.push('/learn/add-content')}
+          className="bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+        >
+          <BiBookOpen />
+          Add Content
+        </button>
+      </div>
+
       {/* Progress Bar */}
       <div className="w-full max-w-2xl mb-8">
         <div className="flex justify-between items-center mb-2">

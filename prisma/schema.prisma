@@ -18,12 +18,11 @@ model User {
   email           String   @unique
   mostRecentSkill String?
 
-  skills    UsersSkills[]
-  UsersWord UsersWord[]
-
-  UserStory UserStory[]
-
-  StoryArc StoryArc[]
+  skills       UsersSkills[]
+  UsersWord    UsersWord[]
+  UserStory    UserStory[]
+  StoryArc     StoryArc[]
+  UserContent  UserContent[]
 }
 
 model Skill {
@@ -289,4 +288,25 @@ model PotentialOutcome {
 
   storyArcId  String
   storyArc    StoryArc @relation(fields: [storyArcId], references: [id])
+}
+
+model UserContent {
+  id         String   @id @default(uuid())
+  userId     String
+  title      String
+  text       String   @db.Text
+  language   String
+  summary    String?  @db.Text
+  sentiment  String?
+  topic      String?
+  difficulty String?
+  audioUrl   String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([language])
 }
