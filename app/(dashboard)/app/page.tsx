@@ -1,17 +1,15 @@
 import { getUser } from '@/app/_services/user';
-import { InductionWizard } from './setup/InductionWizard';
 import { prisma } from '@/utils/db';
 import {
   generateWordsForUser,
   getFlashCardDataForWords,
 } from '@/app/_services/word';
-import FlashCard, { FlashCardHolder, NewFlashCardOptions } from '@/app/_components/flashcard';
-import { Word } from '@prisma/client';
+import { FlashCardHolder } from '@/app/_components/flashcard';
 import { Suspense } from 'react';
 
 interface HomeComponent {
   userId: string;
-  skill: string;
+  skill: string | null;
 }
 
 // async function fetchUserSkills(userId: string) {
@@ -49,7 +47,7 @@ export default async function Home() {
   });
 
   if (!userData?.skills.length || userData?.skills.length < 1) {
-    const availableSkills = await fetchAvailableSkills();
+    await fetchAvailableSkills();
     // return <InductionWizard skills={availableSkills} userId={userData.id} />;
   } else
     return (
@@ -75,9 +73,18 @@ const HomeComponent = async (props: HomeComponent) => {
   );
 };
 
-const FlashCardLoader = async ({ userId, skill }: { userId: string; skill: string }) => {
-  const unknownWords = await generateWordsForUser(3, userId, skill);
+const FlashCardLoader = async ({ userId, skill }: { userId: string; skill: string | null }) => {
+  const unknownWords = await generateWordsForUser(3, userId, skill || 'greek');
+  if (!unknownWords) {
+    return <p className="text-white mt-10">No words available</p>;
+  }
   const words = await getFlashCardDataForWords(unknownWords, 'greek');
+  if (!words) {
+    return <p className="text-white mt-10">No flashcard data available</p>;
+  }
 
-  return <FlashCardHolder userId={userId} skill={skill} words={words} />;
+  // Filter out undefined values
+  const validWords = words.filter((word): word is NonNullable<typeof word> => word !== undefined);
+
+  return <FlashCardHolder userId={userId} skill={skill || 'greek'} words={validWords} />;
 };

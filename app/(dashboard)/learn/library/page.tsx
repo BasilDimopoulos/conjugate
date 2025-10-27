@@ -202,8 +202,8 @@ export default function LibraryPage() {
                   ) : (
                     content.text && (
                       <p className="text-white/40 text-sm italic mb-4 line-clamp-2">
-                        "{content.text.substring(0, 100)}
-                        {content.text.length > 100 ? '...' : ''}"
+                        &quot;{content.text.substring(0, 100)}
+                        {content.text.length > 100 ? '...' : ''}&quot;
                       </p>
                     )
                   )}

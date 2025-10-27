@@ -3,11 +3,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 interface StoryPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function StoryPage({ params }: StoryPageProps) {
-  const { id } = params;
+  const { id } = await params;
   const storyDetails = await getStoryById(id);
 
   return (

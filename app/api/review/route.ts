@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getReviewDeck, updateWordReview } from '@/app/_services/srs';
-import { DifficultyLevels, type Difficulty } from '@/app/_services/srs-types';
+import { DifficultyLevels } from '@/app/_services/srs-types';
 import { auth } from '@clerk/nextjs/server';
 
 // GET: Fetch words due for review

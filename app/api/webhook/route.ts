@@ -19,6 +19,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json('Healthy', { status: 200 });
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   return NextResponse.json('Healthy', { status: 200 });
 }

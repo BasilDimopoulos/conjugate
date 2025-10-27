@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { BiArrowBack, BiX, BiPlusCircle, BiCheckCircle, BiLoader, BiBookmark, BiPlay, BiPause } from 'react-icons/bi';
+import { BiX, BiPlusCircle, BiCheckCircle, BiLoader, BiPlay, BiPause } from 'react-icons/bi';
 import Image from 'next/image';
 import type { Word } from '@prisma/client';
 import { getOrCreateWordFlashcard, isWordInUserDeck, addWordFromContent, checkWordsInDeck } from '@/app/_services/content';
@@ -58,7 +58,7 @@ export default function BookReader(props: BookReaderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [hasFullAudio, setHasFullAudio] = useState(props.hasFullAudio || false);
+  const [hasFullAudio] = useState(props.hasFullAudio || false);
   const [showAudioPrompt, setShowAudioPrompt] = useState(false);
   const [generatingFullAudio, setGeneratingFullAudio] = useState(false);
 
@@ -85,6 +85,27 @@ export default function BookReader(props: BookReaderProps) {
     }
   }
 
+  const moveForward = useCallback(() => {
+    const step = isMobile ? 1 : 2; // Mobile: 1 page, Desktop: 2 pages
+    if (currentLocation + step < props.pages.length) {
+      const newLocation = currentLocation + step;
+      setLocation(newLocation);
+      
+      // Check if user has navigated past initial audio coverage (~2 pages)
+      if (newLocation >= 2 && props.audioUrl && !hasFullAudio && !showAudioPrompt) {
+        setShowAudioPrompt(true);
+      }
+    }
+  }, [isMobile, currentLocation, props.pages.length, props.audioUrl, hasFullAudio, showAudioPrompt]);
+
+  const moveBackward = useCallback(() => {
+    const step = isMobile ? 1 : 2; // Mobile: 1 page, Desktop: 2 pages
+    const newLocation = currentLocation - step;
+    if (newLocation >= 0) {
+      setLocation(newLocation);
+    }
+  }, [isMobile, currentLocation]);
+
   // Keyboard navigation - using useCallback to avoid re-creating
   const iteratePage = useCallback((event: KeyboardEvent) => {
     if (event.key === "ArrowLeft" || event.key === "37") {
@@ -98,47 +119,9 @@ export default function BookReader(props: BookReaderProps) {
         setSidebarOpen(false);
       }
     }
-  }, [currentLocation, lightboxOpen]);
+  }, [lightboxOpen, moveBackward, moveForward]);
 
-  useEffect(() => {
-    document.addEventListener("keydown", iteratePage, true);
-    return () => {
-      document.removeEventListener("keydown", iteratePage, true);
-    };
-  }, [iteratePage]);
-
-  useEffect(() => {
-    loadSpreadWordStatuses();
-  }, [currentLocation]);
-
-  useEffect(() => {
-    if (currentLocation > 0) {
-      updateReadingProgress(props.bookId, currentLocation);
-    }
-  }, [currentLocation]);
-
-  function moveForward() {
-    const step = isMobile ? 1 : 2; // Mobile: 1 page, Desktop: 2 pages
-    if (currentLocation + step < props.pages.length) {
-      const newLocation = currentLocation + step;
-      setLocation(newLocation);
-      
-      // Check if user has navigated past initial audio coverage (~2 pages)
-      if (newLocation >= 2 && props.audioUrl && !hasFullAudio && !showAudioPrompt) {
-        setShowAudioPrompt(true);
-      }
-    }
-  }
-
-  function moveBackward() {
-    const step = isMobile ? 1 : 2; // Mobile: 1 page, Desktop: 2 pages
-    const newLocation = currentLocation - step;
-    if (newLocation >= 0) {
-      setLocation(newLocation);
-    }
-  }
-
-  const loadSpreadWordStatuses = async () => {
+  const loadSpreadWordStatuses = useCallback(async () => {
     try {
       const allWords: string[] = [];
       
@@ -160,7 +143,30 @@ export default function BookReader(props: BookReaderProps) {
     } catch (error) {
       console.error('Error loading word statuses:', error);
     }
-  };
+  }, [leftPage, rightPage, props.userId]);
+
+  useEffect(() => {
+    document.addEventListener("keydown", iteratePage, true);
+    return () => {
+      document.removeEventListener("keydown", iteratePage, true);
+    };
+  }, [iteratePage]);
+
+  useEffect(() => {
+    loadSpreadWordStatuses();
+  }, [currentLocation, loadSpreadWordStatuses]);
+
+  useEffect(() => {
+    const updateProgress = async () => {
+      try {
+        await updateReadingProgress(props.bookId, currentLocation);
+      } catch (error) {
+        console.error('Error updating reading progress:', error);
+      }
+    };
+
+    updateProgress();
+  }, [currentLocation, props.bookId]);
 
   const handleWordClick = async (word: string) => {
     const cleanWord = word.replace(/[.,!?;:"""''。，！？；：、]/g, '');
@@ -196,8 +202,7 @@ export default function BookReader(props: BookReaderProps) {
     }
   };
 
-  const handleImageLoad = (pageNumber: number, event: any) => {
-    const img = event.target;
+  const handleImageLoad = (pageNumber: number, img: HTMLImageElement) => {
     const isVertical = img.naturalHeight > img.naturalWidth;
     setImageOrientations(prev => ({
       ...prev,
@@ -287,7 +292,7 @@ export default function BookReader(props: BookReaderProps) {
       });
       
       if (response.ok) {
-        const data = await response.json();
+        await response.json(); // Response data not needed, just checking success
         // Reload the page to get the new audio URL
         window.location.reload();
       } else {

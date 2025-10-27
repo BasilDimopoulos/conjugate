@@ -76,7 +76,7 @@ const SkillsButton = async (props: SkillsButton) => {
     (skill: UsersSkills) => skill.skillId === user?.mostRecentSkill
   )?.skill;
   console.log('usersSkills: ', usersSkills);
-  console.log('mostRecentSkill: ', mostRecentSkill?.skill);
+  console.log('mostRecentSkill: ', mostRecentSkill);
   return (
     <div className="flex items-center gap-x-8">
       <button className="flex items-center gap-x-2 text-white font-sans font-medium2">

@@ -47,9 +47,10 @@ export interface StoryLog {
   summary: string; // cumulative story summary
 }
 
-interface SceneLog {
-  dialog: Dialogue[]
-}
+// Unused interface - keeping for potential future use
+// interface SceneLog {
+//   dialog: Dialogue[]
+// }
 
 //Example of chapter gen
 //inputs

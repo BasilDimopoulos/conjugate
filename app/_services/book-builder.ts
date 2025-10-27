@@ -2,7 +2,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/utils/db';
 import { analyzeTextContent } from './content';
-import { chunkIntoPages, type BookPage } from './book-utils';
+import { chunkIntoPages } from './book-utils';
 import { generateArticleAudio } from './ai';
 
 // Re-export types for convenience
@@ -182,7 +182,7 @@ export const createBookFromURL = async (
         audioUrl: audioUrl,
         contentType: 'book',
         sourceUrl: url,
-        pages: pages as any, // Prisma Json type
+        pages: JSON.parse(JSON.stringify(pages)), // Convert to Prisma Json type
         totalPages: pages.length,
         currentPage: 0,
         coverImage: article.images[0] || null,

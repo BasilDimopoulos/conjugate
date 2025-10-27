@@ -1,18 +1,35 @@
 'use client';
-import { Dialogue, PlayerChoice } from '@/app/models/game';
+import { Dialogue } from '@/app/models/game';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 type SceneProps = {
-  scene: any; // ideally type this properly
+  scene: {
+    id: string;
+    chapterId: string;
+    location: string;
+    imageUrl: string;
+    isFinalScene: boolean;
+    dialogues: Array<{
+      id: string;
+      character: {
+        id: string;
+        name: string;
+        imageUrl: string;
+      };
+      text: string;
+      audioUrl: string;
+    }>;
+  };
   numberOfDialogueOptions: number;
   onSceneFinished: () => void;
 };
 
-type PlayerChoicesProps = {
-  choices: PlayerChoice[];
-  onChoiceSelected: () => void;
-};
+// Unused interface - keeping for potential future use
+// type PlayerChoicesProps = {
+//   choices: PlayerChoice[];
+//   onChoiceSelected: () => void;
+// };
 
 const firstScenario = {
   id: '4bdfb1b0-e88d-4d9f-9b74-45a028e2942a',
@@ -138,20 +155,22 @@ export default function Game() {
 }
 
 function SceneWindow(props: SceneProps) {
-  const [currentDialogue, setCurrentDialogue] = useState(0);
+  // Unused variables - keeping for potential future use
+  // const [currentDialogue, setCurrentDialogue] = useState(0);
 
   const dialogue = props.scene?.dialogues;
 
   if (!dialogue) return null;
 
-  const handleNext = () => {
-    if (currentDialogue + 1 < props.numberOfDialogueOptions) {
-      setCurrentDialogue(currentDialogue + 1);
-    } else {
-      setCurrentDialogue(0);
-      props.onSceneFinished();
-    }
-  };
+  // Unused function - keeping for potential future use
+  // const handleNext = () => {
+  //   if (currentDialogue + 1 < props.numberOfDialogueOptions) {
+  //     setCurrentDialogue(currentDialogue + 1);
+  //   } else {
+  //     setCurrentDialogue(0);
+  //     props.onSceneFinished();
+  //   }
+  // };
 
   return (
     <div
@@ -222,21 +241,22 @@ function DialogueWindow({ dialogue }: { dialogue: Dialogue[] }) {
   );
 }
 
-const PlayerChoices: React.FC<PlayerChoicesProps> = ({
-  choices,
-  onChoiceSelected,
-}) => {
-  return (
-    <div className="fixed left-1/2 top-1/2 transform -translate-x-1/2 flex flex-col gap-4 z-50">
-      {choices.map((choice, index) => (
-        <button
-          key={choice.id || index}
-          onClick={() => onChoiceSelected()}
-          className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors w-64 text-left shadow-lg"
-        >
-          {choice.text}
-        </button>
-      ))}
-    </div>
-  );
-};
+// Unused component - keeping for potential future use
+// const PlayerChoicesComponent: React.FC<PlayerChoicesProps> = ({
+//   choices,
+//   onChoiceSelected,
+// }) => {
+//   return (
+//     <div className="fixed left-1/2 top-1/2 transform -translate-x-1/2 flex flex-col gap-4 z-50">
+//       {choices.map((choice, index) => (
+//         <button
+//           key={choice.id || index}
+//           onClick={() => onChoiceSelected()}
+//           className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors w-64 text-left shadow-lg"
+//         >
+//           {choice.text}
+//         </button>
+//       ))}
+//     </div>
+//   );
+// };

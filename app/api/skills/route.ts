@@ -5,9 +5,10 @@ export async function GET() {
   try {
     const availableSkills = await prisma.skill.findMany();
     return NextResponse.json(availableSkills, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: `Failed to fetch skills: ${error}` },
+      { error: `Failed to fetch skills: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -46,9 +47,10 @@ export async function POST(req: NextRequest) {
       { message: 'Skills added successfully', createdSkills },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: `Failed to create skills: ${error.message}` },
+      { error: `Failed to create skills: ${errorMessage}` },
       { status: 500 }
     );
   }

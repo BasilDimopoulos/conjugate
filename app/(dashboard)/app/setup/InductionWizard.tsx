@@ -32,7 +32,7 @@ interface LanguageFeatureRow {
 export const InductionWizard = (props: InductionProps) => {
   const skills = props.skills;
   const [page, setPage] = useState('intro');
-  const [selectedLanguage, setSelectedLanguage] = useState({});
+  const [selectedLanguage, setSelectedLanguage] = useState<Skill | null>(null);
   const router = useRouter();
 
   return (
@@ -68,7 +68,7 @@ export const InductionWizard = (props: InductionProps) => {
       )}
       {page === 'languageFeature' && (
         <LanguageFeature
-          selectedLanguage={selectedLanguage?.name}
+          selectedLanguage={selectedLanguage?.name || ''}
           goBack={() => setPage('intro')}
           skillId={selectedLanguage?.id || ''}
           userId={props.userId}
@@ -148,7 +148,7 @@ const LanguageFeature = (props: LanguageFeature) => {
           {currentPage === 'page1' && (
             <>
               <p className="italic text-white text-left font-light pb-1 text-sm">
-                {greetings[props.selectedLanguage].hello} 👋
+                {greetings[props.selectedLanguage as keyof typeof greetings]?.hello} 👋
               </p>
               <h2 className="text-white font-medium text-3xl capitalize pr-10">
                 Tell us a bit more about why you want to learn
@@ -180,7 +180,7 @@ const LanguageFeature = (props: LanguageFeature) => {
                 className="bg-white absolute bottom-10 right-20 px-6 py-1.5 font-sans font-medium text-black/85 flex items-center justify-center gap-x-1"
                 style={{
                   backgroundColor:
-                    greetings[props.selectedLanguage]?.buttonColor || 'white',
+                    (greetings[props.selectedLanguage as keyof typeof greetings] as { buttonColor?: string })?.buttonColor || 'white',
                 }}
               >
                 <p>Next</p>
@@ -191,20 +191,20 @@ const LanguageFeature = (props: LanguageFeature) => {
           {currentPage === 'page2' && (
             <>
               <p className="italic text-white text-left font-light pb-1 text-sm">
-                {greetings[props.selectedLanguage].hello} 👋
+                {greetings[props.selectedLanguage as keyof typeof greetings]?.hello} 👋
               </p>
               <h2 className="text-white font-medium text-3xl capitalize pr-10">
                 Let&apos;s get started with your first {props.selectedLanguage}{' '}
                 words
               </h2>
               <div className="flex flex-col gap-y-10 mt-10">
-                {greetings[props.selectedLanguage].textBlocks?.map(
+                {(greetings[props.selectedLanguage as keyof typeof greetings] as { textBlocks?: string[] })?.textBlocks?.map(
                   (item, index) => (
                     <LanguageFeatureRow
                       text={item}
                       key={index}
                       blockColor={
-                        greetings[props.selectedLanguage]?.blockColor ||
+                        (greetings[props.selectedLanguage as keyof typeof greetings] as { blockColor?: string })?.blockColor ||
                         '#FFFFFF'
                       }
                     />
@@ -216,7 +216,7 @@ const LanguageFeature = (props: LanguageFeature) => {
                 className="bg-white absolute bottom-10 right-20 px-6 py-1.5 font-sans font-medium text-black/85 flex items-center justify-center gap-x-1"
                 style={{
                   backgroundColor:
-                    greetings[props.selectedLanguage]?.buttonColor || 'white',
+                    (greetings[props.selectedLanguage as keyof typeof greetings] as { buttonColor?: string })?.buttonColor || 'white',
                 }}
               >
                 <p>Lets Go</p>

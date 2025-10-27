@@ -81,7 +81,7 @@ export const createBookFromYouTube = async (
         hasFullAudio: true, // Full video audio, not partial
         contentType: 'book',
         sourceUrl: youtubeUrl,
-        pages: pages as any,
+        pages: JSON.parse(JSON.stringify(pages)), // Convert to Prisma Json type
         totalPages: pages.length,
         currentPage: 0,
         coverImage: metadata.thumbnail,

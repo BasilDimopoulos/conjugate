@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BiArrowBack, BiPlay, BiLoader, BiX, BiPlusCircle, BiCheckCircle, BiBookmark } from 'react-icons/bi';
 import { checkWordsInDeck, addWordFromContent, getOrCreateWordFlashcard, isWordInUserDeck, checkWordImageReady, analyzeTextContent, saveContentToLibrary, getSavedContent } from '@/app/_services/content';
@@ -27,7 +27,7 @@ interface TextAnalysis {
 interface SavedContent {
   id: string;
   title: string;
-  text: string;
+  text: string | null;
   language: string;
   summary: string | null;
   sentiment: string | null;
@@ -38,7 +38,7 @@ interface SavedContent {
   updatedAt: Date;
 }
 
-export default function AddContentPage() {
+function AddContentPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const contentId = searchParams.get('id');
@@ -120,10 +120,10 @@ export default function AddContentPage() {
             setBookData({
               id: savedContent.id,
               title: savedContent.title,
-              pages: savedContent.pages as any as BookPage[],
+              pages: savedContent.pages as unknown as BookPage[],
               language: savedContent.language,
               audioUrl: savedContent.audioUrl || null,
-              hasFullAudio: (savedContent as any).hasFullAudio || false, // Track full audio status
+              hasFullAudio: (savedContent as SavedContent & { hasFullAudio?: boolean }).hasFullAudio || false, // Track full audio status
             });
             setBookMode(true);
             setLoadingSavedContent(false);
@@ -149,6 +149,39 @@ export default function AddContentPage() {
           }
           
           // Auto-process the saved content
+          const processLoadedContent = async (savedContent: SavedContent) => {
+            try {
+              if (!savedContent.text) return;
+              
+              // Split text into words
+              const isCJK = ['chinese', 'japanese', 'korean'].includes(savedContent.language);
+              const words = isCJK
+                ? savedContent.text.split('').filter(char => char.trim())
+                : savedContent.text.split(/\s+/).filter(word => word.trim());
+              
+              const cleanWords = words.map(word => ({
+                word,
+                cleanWord: word.replace(/[.,!?;:"""''。，！？；：、]/g, ''),
+              }));
+
+              // Check which words are in deck
+              const statuses = await checkWordsInDeck(
+                cleanWords.map(w => w.cleanWord),
+                userId
+              );
+
+              const wordStatusesData: WordStatus[] = cleanWords.map((w, i) => ({
+                word: w.word,
+                cleanWord: w.cleanWord,
+                inDeck: statuses[i] || false,
+              }));
+
+              setWordStatuses(wordStatusesData);
+            } catch (error) {
+              console.error('Error processing loaded content:', error);
+            }
+          };
+          
           await processLoadedContent(savedContent);
         }
       } catch (error) {
@@ -164,38 +197,6 @@ export default function AddContentPage() {
     }
   }, [contentId, userId]);
 
-  const processLoadedContent = async (savedContent: SavedContent) => {
-    try {
-      if (!savedContent.text) return;
-      
-      // Split text into words
-      const isCJK = ['chinese', 'japanese', 'korean'].includes(savedContent.language);
-      const words = isCJK
-        ? savedContent.text.split('').filter(char => char.trim())
-        : savedContent.text.split(/\s+/).filter(word => word.trim());
-      
-      const cleanWords = words.map(word => ({
-        word,
-        cleanWord: word.replace(/[.,!?;:"""''。，！？；：、]/g, ''),
-      }));
-
-      // Check which words are in deck
-      const statuses = await checkWordsInDeck(
-        cleanWords.map(w => w.cleanWord),
-        userId
-      );
-
-      const wordStatusesData: WordStatus[] = cleanWords.map((w, i) => ({
-        word: w.word,
-        cleanWord: w.cleanWord,
-        inDeck: statuses[i] || false,
-      }));
-
-      setWordStatuses(wordStatusesData);
-    } catch (error) {
-      console.error('Error processing loaded content:', error);
-    }
-  };
 
   const createBookFromURLHandler = async () => {
     if (!url.trim()) return;
@@ -705,7 +706,7 @@ export default function AddContentPage() {
                 <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
                   <h4 className="text-sm font-semibold text-blue-300 mb-2">📚 Book Mode</h4>
                   <p className="text-xs text-white/60">
-                    We'll fetch the article, break it into beautiful pages with images,
+                    We&apos;ll fetch the article, break it into beautiful pages with images,
                     and create an interactive ebook you can flip through!
                   </p>
                 </div>
@@ -1084,7 +1085,7 @@ export default function AddContentPage() {
           {!loadingFlashcard && !flashcardData && selectedWord && (
             <div className="flex flex-col items-center justify-center h-96">
               <p className="text-white/60 text-center">
-                Failed to load flashcard for "{selectedWord}"
+                Failed to load flashcard for &quot;{selectedWord}&quot;
               </p>
               <button
                 onClick={closeSidebar}
@@ -1105,6 +1106,14 @@ export default function AddContentPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function AddContentPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AddContentPageContent />
+    </Suspense>
   );
 }
 
